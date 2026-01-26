@@ -1,0 +1,90 @@
+{
+  "run_id": "a319870e-fbed-4a76-b4f0-5ee203a0b980",
+  "generated_at": "2026-01-26 09:33:10",
+  "total_failures": 1,
+  "total_warnings": 0,
+  "total_successes": 0,
+  "results": [
+    {
+      "user_id": "7032130",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Position failed - Message: The operation failed. The value “2288” provided for field “cust_geographicalScope” is invalid.;The operation failed. The value “533” provided for field “cust_subUnit” is invalid. with the index 0, HTTP Code: 500",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "noelene.delmar@kuehne-nagel.com",
+          "personIdExternal": "7032130"
+        },
+        "position": {
+          "company": "MT28",
+          "jobCode": "950",
+          "division": "49",
+          "location": "1000098803",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "MT28_10BM",
+          "changeReason": "import",
+          "cust_subUnit": "533",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1020250',effectiveStartDate=datetime'2012-10-29T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2288",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "MLT"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1169164800000)/",
+          "personIdExternal": "7032130"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Delmar",
+          "firstName": "Noelene",
+          "startDate": "/Date(1733356800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7032130"
+        },
+        "empemployment": [
+          {
+            "userId": "7032130",
+            "startDate": "/Date(1733356800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1733356800000)/",
+            "customString8": "",
+            "personIdExternal": "7032130",
+            "originalStartDate": "/Date(1733356800000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-26 07:33:06"
+    }
+  ]
+}

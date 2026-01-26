@@ -1,0 +1,5 @@
+userid,field_name,ec_value,pdm_value,is_scm_user,is_im_user,batch_id
+857697,date_of_position,08/16/2020,09/24/2025,False,True,aef539e4-efdd-49c3-907a-9a7ef37591f0
+857697,biz_phone,,+97316625104,False,True,aef539e4-efdd-49c3-907a-9a7ef37591f0
+857697,email::insert::18242,,ebad.rehman@kuehne-nagel.com,False,True,aef539e4-efdd-49c3-907a-9a7ef37591f0
+857697,email::promote::18242,,ebad.rehman@kuehne-nagel.com,False,True,aef539e4-efdd-49c3-907a-9a7ef37591f0

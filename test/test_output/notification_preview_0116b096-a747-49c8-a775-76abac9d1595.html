@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333333;
+        background-color: #f9f9f9;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      h2 {
+        color: #0055A4;
+        border-bottom: 3px solid #0055A4;
+        padding-bottom: 10px;
+      }
+      h3 {
+        color: #0055A4;
+        margin-top: 25px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 25px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+      th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 12px;
+      }
+      th {
+        background-color: #0055A4;
+        color: white;
+        font-weight: bold;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tr:hover {
+        background-color: #f0f0f0;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dddddd;
+        color: #666666;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>📧 PDM to EC Pipeline Notification</h2>
+      <p>The PDM to EC data pipeline has completed. Below are the detailed execution results:</p>
+          <h3>📊 Pipeline Run Overview</h3>
+    <table>
+      <tr>
+        <th>Metric</th><th>Value</th>
+      </tr>
+      <tr><td>Run ID</td><td>0116b096-a747-49c8-a775-76abac9d1595</td></tr><tr><td>Status</td><td><span style='color: red;'><b>PARTIAL</b></span></td></tr><tr><td>Started At</td><td>2026-01-14 15:01:49</td></tr><tr><td>Finished At</td><td>2026-01-14 15:02:36</td></tr><tr><td>Duration</td><td>0:00:46</td></tr><tr><td>Total Records Processed</td><td>93</td></tr><tr><td>━━━ New Employees ━━━</td><td><b></b></td></tr><tr><td>  • Created (Success)</td><td><span style='color: green;'><b>0</b></span></td></tr><tr><td>  • Created (With Warnings)</td><td><span style='color: orange;'><b>17</b></span></td></tr><tr><td>  • Total Created</td><td><b>17</b></td></tr><tr><td>━━━ Existing Employees ━━━</td><td><b></b></td></tr><tr><td>  • Total Existing Users</td><td><b>64</b></td></tr><tr><td>  • Users with Changes</td><td><b>0</b></td></tr><tr><td>  • Updated Successfully</td><td><span style='color: green;'><b>0</b></span></td></tr><tr><td>━━━ Terminations ━━━</td><td><b></b></td></tr><tr><td>  • Terminated</td><td>0</td></tr><tr><td>━━━ Issues ━━━</td><td><b></b></td></tr><tr><td>  • Failed</td><td><span style='color: red;'><b>12</b></span></td></tr><tr><td>  • Total Warnings</td><td><span style='color: orange;'><b>17</b></span></td></tr>
+    </table>
+\n    <h3>📦 Field Change Batches</h3>
+    <table>
+      <tr>
+        <th>Batch Context</th><th>Total Users</th><th>Users with Changes</th><th>Status</th><th>Duration</th>
+      </tr>
+      <tr><td><b>Standard Users</b></td><td>64</td><td>0</td><td><span style='color: green;'>COMPLETED</span></td><td>0:00:01</td></tr>
+    </table>
+\n<p><strong>📎 Note:</strong> Detailed payload snapshots are attached to this email as a JSON file.</p>
+    <h3>❌ Failures</h3>
+    <table>
+      <tr>
+        <th>User ID</th><th>Operation</th><th>Full Message</th>
+      </tr>
+      <tr><td><b>8000161</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 8000161. Missing fields: email</span></td></tr><tr><td><b>7052125</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 7052125. Missing fields: email</span></td></tr><tr><td><b>7050572</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 7050572. Missing fields: email</span></td></tr><tr><td><b>8000170</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 8000170. Missing fields: email</span></td></tr><tr><td><b>8000359</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500</span></td></tr><tr><td><b>7050574</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 7050574. Missing fields: email</span></td></tr><tr><td><b>8000323</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 8000323. Missing fields: email</span></td></tr><tr><td><b>8000377</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500</span></td></tr><tr><td><b>8000325</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500</span></td></tr><tr><td><b>8000171</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 8000171. Missing fields: email</span></td></tr><tr><td><b>8000340</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500</span></td></tr><tr><td><b>8000230</b></td><td>CREATE</td><td><span style='color: red; word-wrap: break-word; white-space: pre-wrap;'>Missing required fields for person creation for user 8000230. Missing fields: email</span></td></tr>
+    </table>
+
+    <h3>⚠️ Warnings</h3>
+    <table>
+      <tr>
+        <th>User ID</th><th>Operation</th><th>Full Message</th>
+      </tr>
+      <tr><td><b>946640</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 946640 already exists</span></td></tr><tr><td><b>7053877</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 7053877 already exists</span></td></tr><tr><td><b>67956</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 67956 already exists</span></td></tr><tr><td><b>1025193</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 1025193 already exists</span></td></tr><tr><td><b>7054839</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 7054839 already exists</span></td></tr><tr><td><b>1264575</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 1264575 already exists</span></td></tr><tr><td><b>1308041</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 1308041 already exists</span></td></tr><tr><td><b>442819</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 442819 already exists</span></td></tr><tr><td><b>8000095</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 8000095 already exists</span></td></tr><tr><td><b>8000222</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 8000222 already exists</span></td></tr><tr><td><b>8000291</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 8000291 already exists</span></td></tr><tr><td><b>7036480</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 7036480 already exists</span></td></tr><tr><td><b>384544</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 384544 already exists</span></td></tr><tr><td><b>8000315</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 8000315 already exists</span></td></tr><tr><td><b>7048238</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 7048238 already exists</span></td></tr><tr><td><b>8000316</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 8000316 already exists</span></td></tr><tr><td><b>1008920</b></td><td>CREATE</td><td><span style='color: orange; word-wrap: break-word; white-space: pre-wrap;'>personIdExternal 1008920 already exists</span></td></tr>
+    </table>
+
+      <div class="footer">
+        <p>For any questions or further information, please contact the HRIS team.</p>
+        <p><strong>Best regards,</strong><br/>HRIS Integrations Team<br/>Kuehne+Nagel</p>
+      </div>
+    </div>
+  </body>
+</html>

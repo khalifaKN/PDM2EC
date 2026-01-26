@@ -1,0 +1,176 @@
+extract_pdm_records_query = """
+        WITH base_query AS (
+        -- Pre-filter to get all active employees
+        SELECT DISTINCT PDM_UID
+        FROM STAGING.M_HR_PERSON_V2_TEST
+        WHERE
+            (
+                IS_STAFF_MEMBER = 'Y' 
+                OR PDM_UID = '7035818' -- external IM requested by Nico.
+                OR PDM_UID = '7043121' --  external IM requested by Oscar. 
+            )
+            AND IS_CURRENT_ACTIVE = 'Y'
+    )
+
+    SELECT DISTINCT
+        MHP.PDM_UID AS USERID,
+        MHP.E_MAIL AS USERNAME,
+        MHP.FIRSTNAME AS FIRSTNAME,
+        MHP.MIDDLENAME AS MI,
+        MHP.LASTNAME AS LASTNAME,
+        MHP.NICKNAME AS NICKNAME,
+        MHP.E_MAIL AS EMAIL,
+        MHP.PRIVATE_EMAIL,
+        -- Gender: Set to NULL if value is 'D'
+        CASE
+            WHEN MHP.GENDER = 'D' THEN NULL
+            ELSE MHP.GENDER
+        END AS GENDER,
+        TO_CHAR(MHP.DATE_OF_BIRTH, 'MM/DD/YYYY') AS DATE_OF_BIRTH,
+
+        -- Manager ID logic: use DIS_PDM_UID if in base_query
+        COALESCE(
+            CASE
+                WHEN MHP.IS_CURRENT_ACTIVE = 'Y' AND MHP.DIS_PDM_UID IN (SELECT PDM_UID FROM base_query)
+                    THEN TO_CHAR(MHP.DIS_PDM_UID)
+            END,
+            ''
+        ) AS MANAGER,
+        TO_CHAR(mgr.JOB_TITLE_STARTDATE, 'MM/DD/YYYY') AS MANAGER_POSITION_START_DATE,
+
+        -- Matrix Manager logic
+        COALESCE(
+            CASE
+                WHEN MHP.IS_CURRENT_ACTIVE = 'Y' AND MHP.TEC_PDM_UID IN (SELECT PDM_UID FROM base_query)
+                    THEN TO_CHAR(MHP.TEC_PDM_UID)
+            END,
+            ''
+        ) AS MATRIX_MANAGER,
+        TO_CHAR(mmgr.JOB_TITLE_STARTDATE, 'MM/DD/YYYY') AS MATRIX_MANAGER_POSITION_START_DATE,
+
+        -- HR logic
+        COALESCE(
+            CASE
+                WHEN MHP.IS_CURRENT_ACTIVE = 'Y' AND MHP.HRRES_PDM_UID IN (SELECT PDM_UID FROM base_query)
+                    THEN TO_CHAR(MHP.HRRES_PDM_UID)
+            END,
+            ''
+        ) AS HR,
+        TO_CHAR(hr.JOB_TITLE_STARTDATE, 'MM/DD/YYYY') AS HR_POSITION_START_DATE,
+
+        -- Job and employment details
+        MHP.JOB_TITLE_ID AS JOBCODE,
+        TO_CHAR(MHP.DATE_OF_ENTRY_KN_GROUP, 'MM/DD/YYYY') AS HIREDATE,
+        TO_CHAR(MHP.BEGIN_DATE, 'MM/DD/YYYY') AS START_OF_EMPLOYMENT,
+        TO_CHAR(MHP.JOB_TITLE_STARTDATE, 'MM/DD/YYYY') AS DATE_OF_POSITION,
+        MHP.CODE_1 ||'_'|| MHP.COST_CENTER AS COST_CENTER,
+        MHP.BRANCH_OFFICE_CID AS ADDRESS_CODE,
+        MHP.PHONE AS BIZ_PHONE,
+        MHP.BRANCH_OFFICE_TIME_ZONE_CODE AS TIMEZONE,
+        MHP.CODE_1 AS COMPANY,
+        'SSO' AS LOGIN_METHOD,
+        MHP.LOCATION_CODE,
+        MHP.HCM_BU_FU_PDM2 as DIVISION,
+        MHP.COUNTRY_CODE as COUNTRY_CODE,
+        -- Build a position name from several fields
+        MHP.JOB_TITLE || '-' || MHP.HCM_BU_FU_PDM2 || '-' || MHP.COUNTRY_CODE ||'_'|| MHP.LOCATION_CODE || '-' || MHP.KN_CODE AS POSITION_NAME,
+
+        -- Flags for special populations (IM/SCM), using business logic and manual overrides
+        COALESCE(
+            CASE
+                WHEN (MHP.IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y' AND MHP.PDM_UID NOT IN ('28470'))
+                 --OR 
+                   --  MHP.COUNTRY_CODE IN ('CO', 'EC', 'VE', 'PE')
+                --     OR (MHP.COUNTRY_CODE = 'CR' AND MHP.CORPORATE_COMPANY <> 'CR80'))
+                THEN 'Y'
+            END,
+            ''
+        ) AS IS_PEOPLEHUB_IM_MANUALLY_INCLUDED,
+
+        COALESCE(
+        CASE
+            WHEN MHP.IS_PEOPLEHUB_SCM_MANUALLY_INCLUDED = 'Y'
+                THEN 'Y'
+        END,
+        ''
+    ) AS IS_PEOPLEHUB_SCM_MANUALLY_INCLUDED,
+
+    CASE
+            WHEN MHP.WORKFORCE = 'W' AND LOWER(MHP.E_MAIL) NOT LIKE 'external.%@kuehne-nagel.com' AND LOWER(MHP.E_MAIL) NOT LIKE '%@kn-external.com' AND MHP.IS_PEOPLEHUB_PERFORMANCE_MANUALLY_DISABLED <> 'Y' THEN '19680' --EC + Learning + P&G
+            WHEN MHP.WORKFORCE = 'B' AND LOWER(MHP.E_MAIL) NOT LIKE 'external.%@kuehne-nagel.com' AND LOWER(MHP.E_MAIL) NOT LIKE '%@kn-external.com' AND MHP.IS_PEOPLEHUB_PERFORMANCE_MANUALLY_INCLUDED = 'Y' THEN '19679' --EC + P&G
+            WHEN MHP.WORKFORCE = 'B' AND LOWER(MHP.E_MAIL) NOT LIKE 'external.%@kuehne-nagel.com' AND LOWER(MHP.E_MAIL) NOT LIKE '%@kn-external.com' AND MHP.IS_PEOPLEHUB_LEARNING_MGMT_MANUALLY_INCLUDED = 'Y' THEN '19678' --EC + Learning
+            WHEN MHP.WORKFORCE = 'B' AND LOWER(MHP.E_MAIL) NOT LIKE 'external.%@kuehne-nagel.com' AND LOWER(MHP.E_MAIL) NOT LIKE '%@kn-external.com' AND MHP.IS_PEOPLEHUB_LEARNING_MGMT_MANUALLY_INCLUDED = 'Y' AND MHP.IS_PEOPLEHUB_PERFORMANCE_MANUALLY_INCLUDED = 'Y' THEN '19680' --EC + Learning + P&G
+            WHEN MHP.WORKFORCE = 'B' THEN '20797' --Functional license
+            WHEN (LOWER(MHP.E_MAIL) LIKE 'external.%@kuehne-nagel.com' OR LOWER(MHP.E_MAIL) LIKE '%@kn-external.com') AND MHP.IS_PEOPLEHUB_LEARNING_MGMT_MANUALLY_INCLUDED = 'Y' AND MHP.IS_PEOPLEHUB_PERFORMANCE_MANUALLY_INCLUDED = 'Y' THEN '22944' -- EXT Learning + P&G
+            WHEN (LOWER(MHP.E_MAIL) LIKE 'external.%@kuehne-nagel.com' OR LOWER(MHP.E_MAIL) LIKE '%@kn-external.com') AND MHP.IS_PEOPLEHUB_LEARNING_MGMT_MANUALLY_INCLUDED = 'Y' THEN '22937' -- EXT Learning 
+            WHEN (LOWER(MHP.E_MAIL) LIKE 'external.%@kuehne-nagel.com' OR LOWER(MHP.E_MAIL) LIKE '%@kn-external.com') AND MHP.IS_PEOPLEHUB_PERFORMANCE_MANUALLY_INCLUDED = 'Y' THEN '22938' -- EXT P&G 
+            WHEN (LOWER(MHP.E_MAIL) LIKE 'external.%@kuehne-nagel.com' OR LOWER(MHP.E_MAIL) LIKE '%@kn-external.com') AND MHP.IS_PEOPLEHUB_RECRUITMENT_MGMT_MANUALLY_INCLUDED = 'Y' THEN '22939' -- EXT Recruiting 
+            WHEN MHP.WORKFORCE = 'W' AND MHP.IS_PEOPLEHUB_PERFORMANCE_MANUALLY_DISABLED = 'Y' AND LOWER(MHP.E_MAIL) NOT LIKE 'external.%@kuehne-nagel.com' AND LOWER(MHP.E_MAIL) NOT LIKE '%@kn-external.com' THEN '19674' -- EP + Learning
+            ELSE '19677'  --EP + None
+        END AS custom_string_8
+
+    FROM STAGING.M_HR_PERSON_V2_TEST MHP
+
+    -- Joins to get manager, matrix manager, and HR details
+    LEFT JOIN STAGING.M_HR_PERSON_V2_TEST mgr ON MHP.DIS_PDM_UID = mgr.PDM_UID
+    LEFT JOIN STAGING.M_HR_PERSON_V2_TEST mmgr ON MHP.TEC_PDM_UID = mmgr.PDM_UID
+    LEFT JOIN STAGING.M_HR_PERSON_V2_TEST hr ON MHP.HRRES_PDM_UID = hr.PDM_UID
+
+    -- Join for IS_PEOPLEHUB_IM_MANUALLY_INCLUDED lookup
+    /*
+    Purpose: Include managers of employees flagged with IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y'.
+    Logic:
+      - MHP.PDM_UID = imlookup.DIS_PDM_UID: Matches each employee with their manager.
+      - imlookup.IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y': Ensures only managers of flagged employees are included.
+      - imlookup.PDM_UID IN (SELECT PDM_UID FROM base_query): Restricts to active population.
+    Result:
+      - Managers of flagged employees are included.
+      - Managers of non-flagged employees are excluded unless they manage another flagged employee.
+    */
+    LEFT JOIN STAGING.M_HR_PERSON_V2_TEST imlookup
+        ON MHP.PDM_UID = imlookup.DIS_PDM_UID
+        AND imlookup.IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y'
+        AND imlookup.PDM_UID IN (SELECT PDM_UID FROM base_query)
+
+    -- INNER JOIN on base_query must be before WHERE
+    INNER JOIN base_query BQ ON MHP.PDM_UID = BQ.PDM_UID
+
+    -- Final WHERE clause applies location and company filters, and includes special populations
+    WHERE  MHP.PDM_UID not in (7033439, 7033429, 7033440) 
+    AND MHP.PDM_UID IN (
+        7054960,8000037,7054839,1025193,1264575,7022338,7054726,8000180,8000174,
+        8000291,8000173,7048950,8000307,7053686,8000095,8000222,8000377,1308041,
+        7048255,442819,8000171,8000325,7036480,7049627,7050615,8000315,384544,
+        8000146,7050311,8000230,7043676,8000411,946640,8000266,7055117,8000316,
+        7049161,8000340,7048238,7048393,8000371,7052904,7054522,7046858,7050959,7049785
+    ) 
+    AND (MHP.CORPORATE_COMPANY = 'CH08'
+       OR MHP.IS_PEOPLEHUB_SCM_MANUALLY_INCLUDED = 'Y'
+       OR MHP.IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y'
+       OR imlookup.PDM_UID IS NOT NULL
+       OR (
+           MHP.IS_CURRENT_ACTIVE = 'Y'
+          AND MHP.PDM_UID IN ('2083','888572','542469','453400','547461','423994','398636','63228','96469','315729','3378','870109','3918','1117724','829293','4015','946640','6540','6364','76973','7022','7136','7118','7134','76065','831059','325833','1032194','11476','1230046','11508','247331','55436','746656','9503','213072','735632','9054','527908','423066','399704','866665','11125','477824','509821','442949','211108','1086870','238215','68238','483776','74556','66471','52207','1015197','214989','441967','8590','472197','126478','420337','11636','184195','5171','1005800','65004','33835','28537','21011','646510','22289','76259','22553','56374','674898','20575','2565','28102','127293','22138','257203','61666','50676','21700','105625','22691','48267','69262','22372','159969','20528','752843','403640','496374','51455','150785','376926','20621','2537','197705','1240006','20145','426604','202471','193825','80506','320518','382684','343688','20547','20783','58270','309749','2172','555263','777330','303016','169619','34693','78590','1125998','188715','719555','20982','20911','16755','16815','551860','527130','608091','1263389','155491','446349','102190','168346','2740','175259','659228','6205','6195','1066940','776495','16180','1082901','82745','971217','201615','718255','16306','414632','406202','12550','216663','976242','77509','404994','566151','371203','812961','55514','79697','22088','649635','13258','11993','213774','519364','1210300','213759','51034','51035','1070641','21166','63764','185441','145093','6416','63020','295473','13200','504078','13224','13216','13209','195523','3857','14574','7208','992820','7181','7004697','27595','335131','31885','1199278','323269','974458','7245','1087588','7014307','278604','6748','1203680','428175','212460','366131','2109','2157','2139','2085','164546','32627','261555','48395','2127','353622','116377','79495','25279','7005054','756194','1134120','398720','237576','52530','312346','4002','1076907','102477','35026','607054','919493','13043','213980','995540','1163718','75541','463790','65528','65895','468856','7623','7618','1080666','1085235','521712','1159268','1106309','979860','979878','1159247','411666','526483','25171','135844','838846','42009','1135146','214661','429320','1140327','336184','7002943','407637','295038','961681','14646','423234','539761','42958','1109570','59250','78787','300738','1114214','25708','979850','44074','7844','7893','460963','246576','4369','286296','620237','109175','421120','357488','817206','7014739','392034','152817','79691','59255','417050','417049','839802','20210','380783','10657','1017746','174725','19425','148400','469045','49077','63257','167766','66268','66476','291584','25694','11638','4874','181915','320367','1287452','350636','394671','6229','366430','463627','5049','10826','13238','389026','157913','743003','738219','738218','336897','46230','885393','409901','598110','908671') --hardcoded SCM's
+       )
+       OR (
+         MHP.COUNTRY_CODE IN ('PA', 'NI', 'GT', 'SV', 'HN', 'DO', 'EE', 'SI', 'BA', 'HR', 'CO', 'EC', 'VE', 'PE')
+         OR (MHP.COUNTRY_CODE = 'CR' AND MHP.CORPORATE_COMPANY <> 'CR80')
+         OR (MHP.COUNTRY_CODE = 'PH' AND MHP.CORPORATE_COMPANY = 'PH43')
+         OR MHP.CODE_1 in ('GB31', 'GB14')
+       )
+       )
+"""
+
+# Get only inactive IM/SCM users who were manually included
+extract_pdm_inactive_records_query = """
+                SELECT PDM_UID, EXIT_REASON_ID, TO_CHAR(DATE_OF_LEAVE, 'MM/DD/YYYY') AS DATE_OF_LEAVE
+                FROM STAGING.M_HR_PERSON_V2
+                WHERE PDM_UID IN ({user_ids}) 
+                AND
+                IS_CURRENT_ACTIVE = 'N'
+                AND
+                (
+                    IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y'
+                    OR IS_PEOPLEHUB_SCM_MANUALLY_INCLUDED = 'Y'
+                ) 
+            """

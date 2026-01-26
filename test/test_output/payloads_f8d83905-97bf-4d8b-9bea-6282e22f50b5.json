@@ -1,0 +1,1121 @@
+{
+  "run_id": "f8d83905-97bf-4d8b-9bea-6282e22f50b5",
+  "generated_at": "2026-01-23 17:49:01",
+  "total_failures": 1,
+  "total_warnings": 6,
+  "total_successes": 4,
+  "results": [
+    {
+      "user_id": "7043550",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "WARNINGS (2):\n  1) personIdExternal 7043550 already exists\n  2) EmpJobRelationships failed - Message: User 7043550 has an inactive related user, 2699, as of 07/09/2025. The related user provided in the record has the status Empty, which means they are inactive.\n      Failed record info: {EmpJobRelationships/userId=7043550, EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z, EmpJobRelationships/relationshipType=18387, EmpJobRelationships/relUserId=2699}. \n      , HTTP Code: 500, Key: EmpJobRelationships/relationshipType=18387,EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z,EmpJobRelationships/userId=7043550",
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "7043550",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "743031",
+            "seqNumber": 1,
+            "startDate": "/Date(1748217600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10AETA",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "7043550",
+            "company": "MT28",
+            "position": "1020255",
+            "managerId": "743031",
+            "seqNumber": 2,
+            "startDate": "/Date(1748217600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10AETA",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "maria_bonnici@qintl.com",
+          "personIdExternal": "7043550"
+        },
+        "position": {
+          "company": "MT28",
+          "jobCode": "6866",
+          "division": "39",
+          "location": "1000098803",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "MT28_10AETA",
+          "changeReason": "import",
+          "cust_subUnit": "3304",
+          "standardHours": "40",
+          "cust_Supervisor": "743031",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2130",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "MLT"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(693964800000)/",
+          "personIdExternal": "7043550"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Bonnici",
+          "firstName": "Maria",
+          "startDate": "/Date(1748217600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "middleName": "Pia",
+          "personIdExternal": "7043550"
+        },
+        "empemployment": [
+          {
+            "userId": "7043550",
+            "startDate": "/Date(1748217600000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1748217600000)/",
+            "customString8": "",
+            "personIdExternal": "7043550",
+            "originalStartDate": "/Date(1748217600000)/"
+          }
+        ],
+        "empjobrelationships": [
+          {
+            "userId": "7043550",
+            "relUserId": "2699",
+            "startDate": "/Date(1752019200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": [
+          {
+            "__metadata": {
+              "uri": "PositionMatrixRelationship",
+              "type": "SFOData.PositionMatrixRelationship"
+            },
+            "Position_code": "1020245",
+            "relatedPosition": "1012424",
+            "matrixRelationshipType": "hr manager",
+            "Position_effectiveStartDate": "/Date(-2208988800000)/"
+          },
+          {
+            "__metadata": {
+              "uri": "PositionMatrixRelationship",
+              "type": "SFOData.PositionMatrixRelationship"
+            },
+            "Position_code": "1020255",
+            "relatedPosition": "1012424",
+            "matrixRelationshipType": "hr manager",
+            "Position_effectiveStartDate": "/Date(-2208988800000)/"
+          },
+          {
+            "__metadata": {
+              "uri": "PositionMatrixRelationship",
+              "type": "SFOData.PositionMatrixRelationship"
+            },
+            "Position_code": "1020255",
+            "relatedPosition": "1012424",
+            "matrixRelationshipType": "hr manager",
+            "Position_effectiveStartDate": "/Date(-2208988800000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "891145",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "WARNINGS (1):\n  1) PositionMatrixRelationships failed - Message: You cannot define a Matrix Relationship that refers to the position it is assigned to. Please correct the Matrix Relationship of type “Dotted Line Manager”., HTTP Code: 500, Key: PositionMatrixRelationship/Position_code=1020246,PositionMatrixRelationship/Position_effectiveStartDate=1900-01-01T00:00:00.000Z,PositionMatrixRelationship/matrixRelationshipType=matrix manager",
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "891145",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1605484800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10BM",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "891145",
+            "company": "MT28",
+            "position": "1020246",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(1605484800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10BM",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "gilbert.darmanin@kuehne-nagel.com",
+          "personIdExternal": "891145"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(830304000000)/",
+          "personIdExternal": "891145"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Darmanin",
+          "firstName": "Gilbert",
+          "startDate": "/Date(1605484800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "891145"
+        },
+        "empemployment": [
+          {
+            "userId": "891145",
+            "startDate": "/Date(1605484800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1605484800000)/",
+            "customString8": "",
+            "personIdExternal": "891145",
+            "originalStartDate": "/Date(1605484800000)/"
+          }
+        ],
+        "empjobrelationships": [
+          {
+            "userId": "891145",
+            "relUserId": "141073",
+            "startDate": "/Date(1752019200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18385"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1020246",
+          "relatedPosition": "1020246",
+          "matrixRelationshipType": "matrix manager",
+          "Position_effectiveStartDate": "/Date(-2208988800000)/"
+        }
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "7038134",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "WARNINGS (1):\n  1) EmpJobRelationships failed - Message: User 7038134 has an inactive related user, 2699, as of 07/09/2025. The related user provided in the record has the status Empty, which means they are inactive.\n      Failed record info: {EmpJobRelationships/userId=7038134, EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z, EmpJobRelationships/relationshipType=18387, EmpJobRelationships/relUserId=2699}. \n      , HTTP Code: 500, Key: EmpJobRelationships/relationshipType=18387,EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z,EmpJobRelationships/userId=7038134",
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "7038134",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1741564800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10LE",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "7038134",
+            "company": "MT28",
+            "position": "1020247",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(1741564800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10LE",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "anton.seneviratne@kuehne-nagel.com",
+          "personIdExternal": "7038134"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(276220800000)/",
+          "personIdExternal": "7038134"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Seneviratne",
+          "firstName": "Anton",
+          "startDate": "/Date(1741564800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7038134"
+        },
+        "empemployment": [
+          {
+            "userId": "7038134",
+            "startDate": "/Date(1741564800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1741564800000)/",
+            "customString8": "",
+            "personIdExternal": "7038134",
+            "originalStartDate": "/Date(1741564800000)/"
+          }
+        ],
+        "empjobrelationships": [
+          {
+            "userId": "7038134",
+            "relUserId": "2699",
+            "startDate": "/Date(1752019200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1020247",
+          "relatedPosition": "1012424",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(-2208988800000)/"
+        }
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "7050704",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "WARNINGS (1):\n  1) EmpJobRelationships failed - Message: User 7050704 has an inactive related user, 2699, as of 09/01/2025. The related user provided in the record has the status Empty, which means they are inactive.\n      Failed record info: {EmpJobRelationships/userId=7050704, EmpJobRelationships/startDate=2025-09-01T00:00:00.000Z, EmpJobRelationships/relationshipType=18387, EmpJobRelationships/relUserId=2699}. \n      , HTTP Code: 500, Key: EmpJobRelationships/relationshipType=18387,EmpJobRelationships/startDate=2025-09-01T00:00:00.000Z,EmpJobRelationships/userId=7050704",
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "7050704",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1756684800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10IS",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "7050704",
+            "company": "MT28",
+            "position": "1020248",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(1756684800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10IS",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "jyothi.polagani@kuehne-nagel.com",
+          "personIdExternal": "7050704"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(864691200000)/",
+          "personIdExternal": "7050704"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Polagani",
+          "firstName": "Jyothi",
+          "startDate": "/Date(1756684800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7050704"
+        },
+        "empemployment": [
+          {
+            "userId": "7050704",
+            "startDate": "/Date(1756684800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1756684800000)/",
+            "customString8": "",
+            "personIdExternal": "7050704",
+            "originalStartDate": "/Date(1756684800000)/"
+          }
+        ],
+        "empjobrelationships": [
+          {
+            "userId": "7050704",
+            "relUserId": "2699",
+            "startDate": "/Date(1756684800000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1020248",
+          "relatedPosition": "1012424",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(-2208988800000)/"
+        }
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "7045352",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "WARNINGS (1):\n  1) EmpJobRelationships failed - Message: User 7045352 has an inactive related user, 2699, as of 07/09/2025. The related user provided in the record has the status Empty, which means they are inactive.\n      Failed record info: {EmpJobRelationships/userId=7045352, EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z, EmpJobRelationships/relationshipType=18387, EmpJobRelationships/relUserId=2699}. \n      , HTTP Code: 500, Key: EmpJobRelationships/relationshipType=18387,EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z,EmpJobRelationships/userId=7045352",
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "7045352",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1750636800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10AI",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "7045352",
+            "company": "MT28",
+            "position": "1020249",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(1750636800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10AI",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "andrea.tumminelli@kuehne-nagel.com",
+          "personIdExternal": "7045352"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(655430400000)/",
+          "personIdExternal": "7045352"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Tumminelli",
+          "firstName": "Andrea",
+          "startDate": "/Date(1750636800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7045352"
+        },
+        "empemployment": [
+          {
+            "userId": "7045352",
+            "startDate": "/Date(1750636800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1750636800000)/",
+            "customString8": "",
+            "personIdExternal": "7045352",
+            "originalStartDate": "/Date(1750636800000)/"
+          }
+        ],
+        "empjobrelationships": [
+          {
+            "userId": "7045352",
+            "relUserId": "2699",
+            "startDate": "/Date(1752019200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1020249",
+          "relatedPosition": "1012424",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(-2208988800000)/"
+        }
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "17946",
+      "operation": "CREATE",
+      "status": "SUCCESS",
+      "error_message": null,
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "17946",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "102190",
+            "seqNumber": 1,
+            "startDate": "/Date(1351468800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10BM",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "17946",
+            "company": "MT28",
+            "position": "1020250",
+            "managerId": "102190",
+            "seqNumber": 2,
+            "startDate": "/Date(1351468800000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10BM",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "frank.zammit@kuehne-nagel.com",
+          "personIdExternal": "17946"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(-25920000000)/",
+          "personIdExternal": "17946"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Zammit",
+          "firstName": "Frank",
+          "startDate": "/Date(1351468800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "17946"
+        },
+        "empemployment": [
+          {
+            "userId": "17946",
+            "startDate": "/Date(1351468800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1351468800000)/",
+            "customString8": "",
+            "personIdExternal": "17946",
+            "originalStartDate": "/Date(1351468800000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "7032130",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Position failed - Message: The operation failed. The value “2288” provided for field “cust_geographicalScope” is invalid.;The operation failed. The value “533” provided for field “cust_subUnit” is invalid. with the index 0, HTTP Code: 500",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "noelene.delmar@kuehne-nagel.com",
+          "personIdExternal": "7032130"
+        },
+        "position": {
+          "company": "MT28",
+          "jobCode": "950",
+          "division": "49",
+          "location": "1000098803",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "MT28_10BM",
+          "changeReason": "import",
+          "cust_subUnit": "533",
+          "standardHours": "40",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2288",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "MLT"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1169164800000)/",
+          "personIdExternal": "7032130"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Delmar",
+          "firstName": "Noelene",
+          "startDate": "/Date(1733356800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7032130"
+        },
+        "empemployment": [
+          {
+            "userId": "7032130",
+            "startDate": "/Date(1733356800000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1733356800000)/",
+            "customString8": "",
+            "personIdExternal": "7032130",
+            "originalStartDate": "/Date(1733356800000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "7025972",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "WARNINGS (1):\n  1) EmpJobRelationships failed - Message: User 7025972 has an inactive related user, 2699, as of 07/09/2025. The related user provided in the record has the status Empty, which means they are inactive.\n      Failed record info: {EmpJobRelationships/userId=7025972, EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z, EmpJobRelationships/relationshipType=18387, EmpJobRelationships/relUserId=2699}. \n      , HTTP Code: 500, Key: EmpJobRelationships/relationshipType=18387,EmpJobRelationships/startDate=2025-07-09T00:00:00.000Z,EmpJobRelationships/userId=7025972",
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "7025972",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1724025600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10OTLE",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "7025972",
+            "company": "MT28",
+            "position": "1020251",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(1724025600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10OTLE",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "debabrata.dey@kuehne-nagel.com",
+          "personIdExternal": "7025972"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(827366400000)/",
+          "personIdExternal": "7025972"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Dey",
+          "firstName": "Debabrata",
+          "startDate": "/Date(1724025600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7025972"
+        },
+        "empemployment": [
+          {
+            "userId": "7025972",
+            "startDate": "/Date(1724025600000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1724025600000)/",
+            "customString8": "",
+            "personIdExternal": "7025972",
+            "originalStartDate": "/Date(1724025600000)/"
+          }
+        ],
+        "empjobrelationships": [
+          {
+            "userId": "7025972",
+            "relUserId": "2699",
+            "startDate": "/Date(1752019200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1020251",
+          "relatedPosition": "1012424",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(-2208988800000)/"
+        }
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "17945",
+      "operation": "CREATE",
+      "status": "SUCCESS",
+      "error_message": null,
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "17945",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(615427200000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10LE",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "17945",
+            "company": "MT28",
+            "position": "1020252",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(615427200000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10LE",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "rosella.caruana@kuehne-nagel.com",
+          "personIdExternal": "17945"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(-417052800000)/",
+          "personIdExternal": "17945"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Caruana",
+          "firstName": "Rosella",
+          "startDate": "/Date(615427200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "17945"
+        },
+        "empemployment": [
+          {
+            "userId": "17945",
+            "startDate": "/Date(615427200000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(615427200000)/",
+            "customString8": "",
+            "personIdExternal": "17945",
+            "originalStartDate": "/Date(615427200000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "17950",
+      "operation": "CREATE",
+      "status": "SUCCESS",
+      "error_message": null,
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "17950",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(957139200000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10LE",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "17950",
+            "company": "MT28",
+            "position": "1020253",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(957139200000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10LE",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "stephen.cuschieri@kuehne-nagel.com",
+          "personIdExternal": "17950"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(320630400000)/",
+          "personIdExternal": "17950"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Cuschieri",
+          "firstName": "Stephen",
+          "startDate": "/Date(957139200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "17950"
+        },
+        "empemployment": [
+          {
+            "userId": "17950",
+            "startDate": "/Date(957139200000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(957139200000)/",
+            "customString8": "",
+            "personIdExternal": "17950",
+            "originalStartDate": "/Date(957139200000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    },
+    {
+      "user_id": "1142798",
+      "operation": "CREATE",
+      "status": "SUCCESS",
+      "error_message": null,
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "1142798",
+            "company": "MT28",
+            "position": "1020244",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1658102400000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10AE",
+            "eventReason": "INITLOAD"
+          },
+          {
+            "userId": "1142798",
+            "company": "MT28",
+            "position": "1020254",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 2,
+            "startDate": "/Date(1658102400000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "MT28_10AE",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "billy.borg@kuehne-nagel.com",
+          "personIdExternal": "1142798"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(603590400000)/",
+          "personIdExternal": "1142798"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Borg",
+          "firstName": "Billy",
+          "startDate": "/Date(1658102400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "1142798"
+        },
+        "empemployment": [
+          {
+            "userId": "1142798",
+            "startDate": "/Date(1658102400000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1658102400000)/",
+            "customString8": "",
+            "personIdExternal": "1142798",
+            "originalStartDate": "/Date(1658102400000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 15:48:58"
+    }
+  ]
+}

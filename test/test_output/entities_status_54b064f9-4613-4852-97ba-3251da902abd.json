@@ -1,0 +1,18 @@
+{
+  "7032130": {
+    "failed_entities": [
+      "Position",
+      "EmpJob",
+      "PositionMatrixRelationships",
+      "PerPhone",
+      "EmpJobRelationships"
+    ],
+    "successful_entities": null,
+    "skipped_entities": [
+      "PerPerson",
+      "EmpEmployment",
+      "PerPersonal",
+      "PerEmail"
+    ]
+  }
+}

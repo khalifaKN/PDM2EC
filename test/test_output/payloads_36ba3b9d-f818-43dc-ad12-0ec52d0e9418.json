@@ -1,0 +1,131 @@
+{
+  "run_id": "36ba3b9d-f818-43dc-ad12-0ec52d0e9418",
+  "generated_at": "2026-01-26 13:24:01",
+  "total_failures": 0,
+  "total_warnings": 0,
+  "total_successes": 1,
+  "results": [
+    {
+      "user_id": "1005800",
+      "operation": "UPDATE",
+      "status": "SUCCESS",
+      "error_message": null,
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "1005800",
+            "company": "CY71",
+            "position": "1020261",
+            "managerId": "399443",
+            "seqNumber": 2,
+            "startDate": "/Date(1761955200000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "CY71_10NM",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "philippos.tsangaris@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "1005800"
+        },
+        "position": {
+          "code": "1020231",
+          "company": "CY71",
+          "jobCode": "512",
+          "division": "2631",
+          "location": "1007276030",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10NM",
+          "changeReason": "import",
+          "cust_subUnit": "2746",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001724',effectiveStartDate=datetime'2025-04-22T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2744",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        },
+        "empemployment": [
+          {
+            "userId": "1005800",
+            "startDate": "/Date(1635033600000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1635033600000)/",
+            "customString8": "",
+            "personIdExternal": "1005800",
+            "originalStartDate": "/Date(1635033600000)/"
+          }
+        ],
+        "position_sync": {
+          "code": "1020231",
+          "company": "CY71",
+          "jobCode": "512",
+          "division": "2631",
+          "location": "1007276030",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10NM",
+          "changeReason": "import",
+          "cust_subUnit": "2746",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001724',effectiveStartDate=datetime'2025-04-22T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1761955200000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2744",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        },
+        "empinitloadjob": [
+          {
+            "userId": "1005800",
+            "company": "CY71",
+            "position": "1020230",
+            "managerId": "NO_MANAGER",
+            "seqNumber": 1,
+            "startDate": "/Date(1635033600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "CY71_10NM",
+            "eventReason": "INITLOAD"
+          }
+        ]
+      },
+      "timestamp": "2026-01-26 11:23:59"
+    }
+  ]
+}

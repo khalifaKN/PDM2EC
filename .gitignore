@@ -1,0 +1,5 @@
+/.venv
+/.vscode
+/logs
+/PROD_successfactors_migration_to_ec_modules
+/troubleshoot

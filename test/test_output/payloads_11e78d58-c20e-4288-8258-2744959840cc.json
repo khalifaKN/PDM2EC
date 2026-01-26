@@ -1,0 +1,832 @@
+{
+  "run_id": "11e78d58-c20e-4288-8258-2744959840cc",
+  "generated_at": "2026-01-13 16:32:20",
+  "total_failures": 26,
+  "total_warnings": 2,
+  "failures_and_warnings": [
+    {
+      "user_id": "7053877",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7048950” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "alison.lauder@kuehne-nagel.com",
+          "personIdExternal": "7053877"
+        },
+        "position": {
+          "company": "GB14",
+          "jobCode": "1506",
+          "division": "40",
+          "location": "1000229570",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "GB14_60BO",
+          "changeReason": "import",
+          "cust_subUnit": "1344",
+          "standardHours": "40",
+          "cust_Supervisor": "7048950",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1763337600000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "GBR"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(87350400000)/",
+          "personIdExternal": "7053877"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Lauder",
+          "firstName": "Alison",
+          "startDate": "/Date(1763337600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7053877"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7050501",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "PerPersonal failed - Message: Import personal information or home addresses with the same start date as in the Person Relationship record for dependents. If this person is neither an employee nor a dependent, please contact Technical Support for assistance.\n Failed record info: {PerPersonal/personIdExternal=7050501, PerPersonal/firstName=Madalina, PerPersonal/lastName=Stoica, PerPersonal/startDate=2025-08-05T00:00:00.000Z, PerPersonal/gender=F}. \n , HTTP Code: 500, Key: PerPersonal/personIdExternal=7050501,PerPersonal/startDate=2025-08-05T00:00:00.000Z",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "madalina.stoica@kuehne-nagel.com",
+          "personIdExternal": "7050501"
+        },
+        "position": {
+          "company": "GB14",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1002001708",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "GB14_DOSB56",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "cust_Supervisor": "406063",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1754265600000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "GBR"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(670896000000)/",
+          "personIdExternal": "7050501"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Stoica",
+          "firstName": "Madalina",
+          "startDate": "/Date(1754352000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7050501"
+        },
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019955",
+          "relatedPosition": "1019934",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1754265600000)/"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7054958",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7051716” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "tom.kettlewell@kuehne-nagel.com",
+          "personIdExternal": "7054958"
+        },
+        "position": {
+          "company": "GB14",
+          "jobCode": "5173",
+          "division": "41",
+          "location": "1003384517",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "GB14_06CDON",
+          "changeReason": "import",
+          "cust_subUnit": "1867",
+          "standardHours": "40",
+          "cust_Supervisor": "7051716",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760313600000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "967",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "GBR"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(987552000000)/",
+          "personIdExternal": "7054958"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Kettlewell",
+          "firstName": "Tom",
+          "startDate": "/Date(1760313600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7054958"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "67956",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 67956 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "67956",
+          "company": "GB14",
+          "position": "1002470",
+          "managerId": "213854",
+          "seqNumber": 2,
+          "startDate": "/Date(1768262400000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_03BO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "shahid.ahmed@kuehne-nagel.com",
+          "personIdExternal": "67956"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(407894400000)/",
+          "personIdExternal": "67956"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Ahmed",
+          "firstName": "Shahid",
+          "startDate": "/Date(1751414400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "67956"
+        },
+        "empemployment": {
+          "userId": "67956",
+          "startDate": "/Date(1193011200000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1193011200000)/",
+          "customString8": "",
+          "personIdExternal": "67956",
+          "originalStartDate": "/Date(1193011200000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "67956",
+            "relUserId": "216649",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ]
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "8000079",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7052554” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "david.quinones@kuehne-nagel.com",
+          "personIdExternal": "8000079"
+        },
+        "position": {
+          "company": "CO77",
+          "jobCode": "1177",
+          "division": "40",
+          "location": "1007589748",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CO77_10UIMC",
+          "changeReason": "import",
+          "cust_subUnit": "1274",
+          "standardHours": "40",
+          "cust_Supervisor": "7052554",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760400000000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "COL"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(811468800000)/",
+          "personIdExternal": "8000079"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Quiñones",
+          "firstName": "David",
+          "startDate": "/Date(1760400000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000079"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7049897",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7049408” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "pier.vasquezpanduro@kuehne-nagel.com",
+          "personIdExternal": "7049897"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1000939192",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_18TPG1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "cust_Supervisor": "7049408",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1754870400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(622425600000)/",
+          "personIdExternal": "7049897"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Vasquez Panduro",
+          "firstName": "Pier",
+          "startDate": "/Date(1754870400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7049897"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7049899",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7049408” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "danilo.freitastangoa@kuehne-nagel.com",
+          "personIdExternal": "7049899"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1000939192",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_18TPG1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "cust_Supervisor": "7049408",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1754006400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(799632000000)/",
+          "personIdExternal": "7049899"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Freitas Tangoa",
+          "firstName": "Danilo",
+          "startDate": "/Date(1754006400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7049899"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "8000080",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7052554” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "ronald.barrero@kuehne-nagel.com",
+          "personIdExternal": "8000080"
+        },
+        "position": {
+          "company": "CO77",
+          "jobCode": "1177",
+          "division": "40",
+          "location": "1007589748",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CO77_10UIMC",
+          "changeReason": "import",
+          "cust_subUnit": "1274",
+          "standardHours": "40",
+          "cust_Supervisor": "7052554",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760400000000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "COL"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(522720000000)/",
+          "personIdExternal": "8000080"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Barrero",
+          "firstName": "Ronald",
+          "startDate": "/Date(1760400000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000080"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "8000075",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7052094” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "camila.garzon@kuehne-nagel.com",
+          "personIdExternal": "8000075"
+        },
+        "position": {
+          "company": "CO77",
+          "jobCode": "9764",
+          "division": "45",
+          "location": "1005810034",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CO77_10KCUS",
+          "changeReason": "import",
+          "cust_subUnit": "1426",
+          "standardHours": "40",
+          "cust_Supervisor": "7052094",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760400000000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1424",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "COL"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(844214400000)/",
+          "personIdExternal": "8000075"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Garzon",
+          "firstName": "Camila",
+          "startDate": "/Date(1760400000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000075"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7049892",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7049408” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "renzo.rodriguez@kuehne-nagel.com",
+          "personIdExternal": "7049892"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1000939192",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_18TPG1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "cust_Supervisor": "7049408",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1754870400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(783475200000)/",
+          "personIdExternal": "7049892"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Rodriguez Torres",
+          "firstName": "Renzo",
+          "startDate": "/Date(1754870400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7049892"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7049893",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7049408” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "anderson.chotacrisologo@kuehne-nagel.com",
+          "personIdExternal": "7049893"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1000939192",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_18TPG1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "cust_Supervisor": "7049408",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1754870400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1033948800000)/",
+          "personIdExternal": "7049893"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Chota Crisologo",
+          "firstName": "Anderson",
+          "startDate": "/Date(1754870400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7049893"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "7049409",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “7049408” provided for field “cust_Supervisor” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "evelyn.alvan@kuehne-nagel.com",
+          "personIdExternal": "7049409"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "943",
+          "division": "42",
+          "location": "1000939192",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_18TPG1",
+          "changeReason": "import",
+          "cust_subUnit": "1746",
+          "standardHours": "40",
+          "cust_Supervisor": "7049408",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1754870400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(704505600000)/",
+          "personIdExternal": "7049409"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Alvan Vaquez",
+          "firstName": "Evelyn",
+          "startDate": "/Date(1754870400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7049409"
+        }
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    },
+    {
+      "user_id": "1008920",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 1008920 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "1008920",
+          "company": "GB14",
+          "position": "1003536",
+          "managerId": "67956",
+          "seqNumber": 2,
+          "startDate": "/Date(1768262400000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_03BO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "loraine.shurmer@kuehne-nagel.com",
+          "personIdExternal": "1008920"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(-217814400000)/",
+          "personIdExternal": "1008920"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Shurmer",
+          "firstName": "Loraine",
+          "startDate": "/Date(1630454400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "1008920"
+        },
+        "empemployment": {
+          "userId": "1008920",
+          "startDate": "/Date(1630454400000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1630454400000)/",
+          "customString8": "",
+          "personIdExternal": "1008920",
+          "originalStartDate": "/Date(1630454400000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "1008920",
+            "relUserId": "216649",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ]
+      },
+      "timestamp": "2026-01-13 14:32:12"
+    }
+  ]
+}

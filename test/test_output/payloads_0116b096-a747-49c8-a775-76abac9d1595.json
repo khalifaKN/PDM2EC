@@ -1,0 +1,1839 @@
+{
+  "run_id": "0116b096-a747-49c8-a775-76abac9d1595",
+  "generated_at": "2026-01-14 15:02:43",
+  "total_failures": 12,
+  "total_warnings": 17,
+  "failures_and_warnings": [
+    {
+      "user_id": "946640",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 946640 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "946640",
+          "company": "AT18",
+          "position": "1000398",
+          "managerId": "6425",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "AT18_99ZO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "norbert.adler@kuehne-nagel.com",
+          "personIdExternal": "946640"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(-88819200000)/",
+          "personIdExternal": "946640"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Adler",
+          "firstName": "Norbert",
+          "startDate": "/Date(1622505600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "946640"
+        },
+        "empemployment": {
+          "userId": "946640",
+          "startDate": "/Date(1622505600000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1622505600000)/",
+          "customString8": "",
+          "personIdExternal": "946640",
+          "originalStartDate": "/Date(1622505600000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "946640",
+            "relUserId": "205979",
+            "startDate": "/Date(1752019200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          },
+          {
+            "userId": "946640",
+            "relUserId": "1076241",
+            "startDate": "/Date(1756684800000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18385"
+          }
+        ],
+        "positionmatrixrelationships": [
+          {
+            "__metadata": {
+              "uri": "PositionMatrixRelationship",
+              "type": "SFOData.PositionMatrixRelationship"
+            },
+            "Position_code": "1000398",
+            "relatedPosition": "1006320",
+            "matrixRelationshipType": "matrix manager",
+            "Position_effectiveStartDate": "/Date(1618876800000)/"
+          },
+          {
+            "__metadata": {
+              "uri": "PositionMatrixRelationship",
+              "type": "SFOData.PositionMatrixRelationship"
+            },
+            "Position_code": "1000398",
+            "relatedPosition": "1000398",
+            "matrixRelationshipType": "hr manager",
+            "Position_effectiveStartDate": "/Date(1618876800000)/"
+          }
+        ]
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "7052125",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Missing required fields for person creation for user 7052125. Missing fields: email",
+      "warning_message": null,
+      "payloads": {
+        "position": {
+          "company": "HR31",
+          "jobCode": "1586",
+          "division": "41",
+          "location": "1000083734",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "HR31_10CHG",
+          "changeReason": "import",
+          "cust_subUnit": "1862",
+          "standardHours": "40",
+          "cust_Supervisor": "7009272",
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1757894400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "967",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "HRV"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "7053877",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 7053877 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "7053877",
+          "company": "GB14",
+          "position": "1020001",
+          "managerId": "7048950",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_60BO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "alison.lauder@kuehne-nagel.com",
+          "personIdExternal": "7053877"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(87350400000)/",
+          "personIdExternal": "7053877"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Lauder",
+          "firstName": "Alison",
+          "startDate": "/Date(1763337600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7053877"
+        },
+        "empemployment": {
+          "userId": "7053877",
+          "startDate": "/Date(1763337600000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1763337600000)/",
+          "customString8": "",
+          "personIdExternal": "7053877",
+          "originalStartDate": "/Date(1763337600000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "7053877",
+            "relUserId": "125747",
+            "startDate": "/Date(1763337600000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1020001",
+          "relatedPosition": "1005110",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000170",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Missing required fields for person creation for user 8000170. Missing fields: email",
+      "warning_message": null,
+      "payloads": {
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1006022083",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_16TPA1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1009284',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760918400000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000359",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "milagros.garcia@kuehne-nagel.com",
+          "personIdExternal": "8000359"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1007965610",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_17TPM1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1010048',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1762387200000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(708652800000)/",
+          "personIdExternal": "8000359"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Garcia",
+          "firstName": "Milagros",
+          "startDate": "/Date(1762387200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000359"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000323",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Missing required fields for person creation for user 8000323. Missing fields: email",
+      "warning_message": null,
+      "payloads": {
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1007965610",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_17TPM1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1010048',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760659200000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "67956",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 67956 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "67956",
+          "company": "GB14",
+          "position": "1002470",
+          "managerId": "213854",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_03BO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "shahid.ahmed@kuehne-nagel.com",
+          "personIdExternal": "67956"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(407894400000)/",
+          "personIdExternal": "67956"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Ahmed",
+          "firstName": "Shahid",
+          "startDate": "/Date(1193011200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "67956"
+        },
+        "empemployment": {
+          "userId": "67956",
+          "startDate": "/Date(1193011200000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1193011200000)/",
+          "customString8": "",
+          "personIdExternal": "67956",
+          "originalStartDate": "/Date(1193011200000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "67956",
+            "relUserId": "216649",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ]
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "1025193",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 1025193 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "1025193",
+          "company": "EE90",
+          "position": "1004647",
+          "managerId": "725187",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "EE90_60GSD3",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "veronika.bogdanova@kuehne-nagel.com",
+          "personIdExternal": "1025193"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(617414400000)/",
+          "personIdExternal": "1025193"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Bogdanova",
+          "firstName": "Veronika",
+          "startDate": "/Date(1633305600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "1025193"
+        },
+        "empemployment": {
+          "userId": "1025193",
+          "startDate": "/Date(1633305600000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1633305600000)/",
+          "customString8": "",
+          "personIdExternal": "1025193",
+          "originalStartDate": "/Date(1633305600000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "1025193",
+            "relUserId": "309407",
+            "startDate": "/Date(1748736000000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1003072",
+          "relatedPosition": "1004542",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1757030400000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "7054839",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 7054839 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "7054839",
+          "company": "GB31",
+          "position": "1019991",
+          "managerId": "818502",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB31_10AETP",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "ben_cripps@qintl.com",
+          "personIdExternal": "7054839"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(618364800000)/",
+          "personIdExternal": "7054839"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Cripps",
+          "firstName": "Ben",
+          "startDate": "/Date(1762819200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7054839"
+        },
+        "empemployment": {
+          "userId": "7054839",
+          "startDate": "/Date(1762819200000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1762819200000)/",
+          "customString8": "",
+          "personIdExternal": "7054839",
+          "originalStartDate": "/Date(1762819200000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "7054839",
+            "relUserId": "427124",
+            "startDate": "/Date(1762819200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019991",
+          "relatedPosition": "1005397",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "1264575",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 1264575 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "1264575",
+          "company": "GB14",
+          "position": "1019982",
+          "managerId": "216432",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_06CDON",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "matthew.scoble@kuehne-nagel.com",
+          "personIdExternal": "1264575"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1042934400000)/",
+          "personIdExternal": "1264575"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Scoble",
+          "firstName": "Matthew",
+          "startDate": "/Date(1755475200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "1264575"
+        },
+        "empemployment": {
+          "userId": "1264575",
+          "startDate": "/Date(1755475200000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1755475200000)/",
+          "customString8": "",
+          "personIdExternal": "1264575",
+          "originalStartDate": "/Date(1755475200000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "1264575",
+            "relUserId": "7030528",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019982",
+          "relatedPosition": "1005822",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "1308041",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 1308041 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "1308041",
+          "company": "GB14",
+          "position": "1005238",
+          "managerId": "635798",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_85VS",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "flynn.martindale@kuehne-nagel.com",
+          "personIdExternal": "1308041"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1067126400000)/",
+          "personIdExternal": "1308041"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Martindale",
+          "firstName": "Flynn",
+          "startDate": "/Date(1695600000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "1308041"
+        },
+        "empemployment": {
+          "userId": "1308041",
+          "startDate": "/Date(1695600000000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1695600000000)/",
+          "customString8": "",
+          "personIdExternal": "1308041",
+          "originalStartDate": "/Date(1695600000000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "1308041",
+            "relUserId": "623376",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1005343",
+          "relatedPosition": "1005343",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1751241600000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "442819",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 442819 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "442819",
+          "company": "GB14",
+          "position": "1004728",
+          "managerId": "1256159",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_YVSSLH",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "timothy.dickinson@kuehne-nagel.com",
+          "personIdExternal": "442819"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(-482803200000)/",
+          "personIdExternal": "442819"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Dickinson",
+          "firstName": "Timothy",
+          "startDate": "/Date(1474329600000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "442819"
+        },
+        "empemployment": {
+          "userId": "442819",
+          "startDate": "/Date(1474329600000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1199145600000)/",
+          "customString8": "",
+          "personIdExternal": "442819",
+          "originalStartDate": "/Date(1199145600000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "442819",
+            "relUserId": "512985",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ]
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000095",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 8000095 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "8000095",
+          "company": "CO77",
+          "position": "1019987",
+          "managerId": "1076978",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "CO77_10AIKO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "k.morales@kuehne-nagel.com",
+          "personIdExternal": "8000095"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1079740800000)/",
+          "personIdExternal": "8000095"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Morales",
+          "firstName": "Katrin",
+          "startDate": "/Date(1760918400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000095"
+        },
+        "empemployment": {
+          "userId": "8000095",
+          "startDate": "/Date(1760918400000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1760918400000)/",
+          "customString8": "",
+          "personIdExternal": "8000095",
+          "originalStartDate": "/Date(1760918400000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "8000095",
+            "relUserId": "579829",
+            "startDate": "/Date(1760918400000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019987",
+          "relatedPosition": "1008543",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000377",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "julia.aldabahurtado@kuehne-nagel.com",
+          "personIdExternal": "8000377"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1007965610",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_17TPM1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1010048',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1763424000000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(514771200000)/",
+          "personIdExternal": "8000377"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Aldaba Hurtado",
+          "firstName": "Julia",
+          "startDate": "/Date(1763424000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000377"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000222",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 8000222 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "8000222",
+          "company": "GB14",
+          "position": "1019993",
+          "managerId": "7034661",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_51VO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "sam.richardson@kuehne-nagel.com",
+          "personIdExternal": "8000222"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(736128000000)/",
+          "personIdExternal": "8000222"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Richardson",
+          "firstName": "Sam",
+          "startDate": "/Date(1764547200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000222"
+        },
+        "empemployment": {
+          "userId": "8000222",
+          "startDate": "/Date(1764547200000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1764547200000)/",
+          "customString8": "",
+          "personIdExternal": "8000222",
+          "originalStartDate": "/Date(1764547200000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "8000222",
+            "relUserId": "216649",
+            "startDate": "/Date(1764547200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019993",
+          "relatedPosition": "1003165",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000291",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 8000291 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "8000291",
+          "company": "PH43",
+          "position": "1019997",
+          "managerId": "7020639",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "PH43_11KCAP",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "lg.canete@kuehne-nagel.com",
+          "personIdExternal": "8000291"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(879465600000)/",
+          "personIdExternal": "8000291"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Cañete",
+          "firstName": "Lg",
+          "startDate": "/Date(1765238400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000291"
+        },
+        "empemployment": {
+          "userId": "8000291",
+          "startDate": "/Date(1765238400000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1765238400000)/",
+          "customString8": "",
+          "personIdExternal": "8000291",
+          "originalStartDate": "/Date(1765238400000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "8000291",
+            "relUserId": "7006878",
+            "startDate": "/Date(1765238400000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019997",
+          "relatedPosition": "1019997",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "7036480",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 7036480 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "7036480",
+          "company": "GB14",
+          "position": "1019977",
+          "managerId": "391673",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_00CISL",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "ayaan.khayre@kuehne-nagel.com",
+          "personIdExternal": "7036480"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(859939200000)/",
+          "personIdExternal": "7036480"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Khayre",
+          "firstName": "Ayaan",
+          "startDate": "/Date(1738368000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7036480"
+        },
+        "empemployment": {
+          "userId": "7036480",
+          "startDate": "/Date(1738368000000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1738368000000)/",
+          "customString8": "",
+          "personIdExternal": "7036480",
+          "originalStartDate": "/Date(1738368000000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "7036480",
+            "relUserId": "65384",
+            "startDate": "/Date(1761955200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019977",
+          "relatedPosition": "1003006",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "384544",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 384544 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "384544",
+          "company": "GB31",
+          "position": "1002251",
+          "managerId": "291319",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB31_99NA",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "nadine.thompson@kuehne-nagel.com",
+          "personIdExternal": "384544"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(259718400000)/",
+          "personIdExternal": "384544"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Thompson",
+          "firstName": "Nadine",
+          "startDate": "/Date(1756684800000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "384544"
+        },
+        "empemployment": {
+          "userId": "384544",
+          "startDate": "/Date(1756684800000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1442793600000)/",
+          "customString8": "",
+          "personIdExternal": "384544",
+          "originalStartDate": "/Date(1442793600000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "384544",
+            "relUserId": "510199",
+            "startDate": "/Date(1756684800000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ]
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000325",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "miguel.gonzales@kuehne-nagel.com",
+          "personIdExternal": "8000325"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1007965610",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_17TPM1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1010048',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1760659200000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1009929600000)/",
+          "personIdExternal": "8000325"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Gonzales",
+          "firstName": "Miguel",
+          "startDate": "/Date(1760659200000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000325"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000171",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Missing required fields for person creation for user 8000171. Missing fields: email",
+      "warning_message": null,
+      "payloads": {
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1006022083",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_16TPA1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1009284',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1762128000000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000315",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 8000315 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "8000315",
+          "company": "CO77",
+          "position": "1019998",
+          "managerId": "7004769",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "CO77_10USES",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "daniel.laverde@kuehne-nagel.com",
+          "personIdExternal": "8000315"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(1036886400000)/",
+          "personIdExternal": "8000315"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Laverde",
+          "firstName": "Daniel",
+          "startDate": "/Date(1765238400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000315"
+        },
+        "empemployment": {
+          "userId": "8000315",
+          "startDate": "/Date(1765238400000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1765238400000)/",
+          "customString8": "",
+          "personIdExternal": "8000315",
+          "originalStartDate": "/Date(1765238400000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "8000315",
+            "relUserId": "968008",
+            "startDate": "/Date(1765238400000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019998",
+          "relatedPosition": "1019998",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "7048238",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 7048238 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "7048238",
+          "company": "EC84",
+          "position": "1019978",
+          "managerId": "198091",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "EC84_20NPAP",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "ariel.rosero@kuehne-nagel.com",
+          "personIdExternal": "7048238"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(974246400000)/",
+          "personIdExternal": "7048238"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Rosero",
+          "firstName": "Ariel",
+          "startDate": "/Date(1753056000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "7048238"
+        },
+        "empemployment": {
+          "userId": "7048238",
+          "startDate": "/Date(1753056000000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1753056000000)/",
+          "customString8": "",
+          "personIdExternal": "7048238",
+          "originalStartDate": "/Date(1753056000000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000340",
+      "operation": "CREATE",
+      "status": "FAILED",
+      "error_message": "Position failed - Message: The operation failed. The value “1007965610” provided for field “location” is invalid., HTTP Code: 500",
+      "warning_message": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "ander.juarez@kuehne-nagel.com",
+          "personIdExternal": "8000340"
+        },
+        "position": {
+          "company": "PE83",
+          "jobCode": "547",
+          "division": "42",
+          "location": "1007965610",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "PE83_17TPM1",
+          "changeReason": "import",
+          "cust_subUnit": "1694",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1010048',effectiveStartDate=datetime'2025-07-17T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(1762128000000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1308",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "PER"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(93312000000)/",
+          "personIdExternal": "8000340"
+        },
+        "perpersonal": {
+          "gender": "M",
+          "lastName": "Juarez",
+          "firstName": "Ander",
+          "startDate": "/Date(1762128000000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000340"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "8000316",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 8000316 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "8000316",
+          "company": "CO77",
+          "position": "1019998",
+          "managerId": "7004769",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "CO77_10USES",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "diana.suarez@kuehne-nagel.com",
+          "personIdExternal": "8000316"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(442886400000)/",
+          "personIdExternal": "8000316"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Suarez",
+          "firstName": "Diana",
+          "startDate": "/Date(1765238400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "8000316"
+        },
+        "empemployment": {
+          "userId": "8000316",
+          "startDate": "/Date(1765238400000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1765238400000)/",
+          "customString8": "",
+          "personIdExternal": "8000316",
+          "originalStartDate": "/Date(1765238400000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "8000316",
+            "relUserId": "968008",
+            "startDate": "/Date(1765238400000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ],
+        "positionmatrixrelationships": {
+          "__metadata": {
+            "uri": "PositionMatrixRelationship",
+            "type": "SFOData.PositionMatrixRelationship"
+          },
+          "Position_code": "1019998",
+          "relatedPosition": "1019998",
+          "matrixRelationshipType": "hr manager",
+          "Position_effectiveStartDate": "/Date(1768348800000)/"
+        }
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    },
+    {
+      "user_id": "1008920",
+      "operation": "CREATE",
+      "status": "WARNING",
+      "error_message": null,
+      "warning_message": "personIdExternal 1008920 already exists",
+      "payloads": {
+        "empjob": {
+          "userId": "1008920",
+          "company": "GB14",
+          "position": "1003536",
+          "managerId": "67956",
+          "seqNumber": 2,
+          "startDate": "/Date(1768348800000)/",
+          "__metadata": {
+            "uri": "EmpJob",
+            "type": "SFOData.EmpJob"
+          },
+          "costCenter": "GB14_03BO",
+          "eventReason": "DATACHG"
+        },
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "loraine.shurmer@kuehne-nagel.com",
+          "personIdExternal": "1008920"
+        },
+        "perperson": {
+          "__metadata": {
+            "uri": "PerPerson",
+            "type": "SFOData.PerPerson"
+          },
+          "dateOfBirth": "/Date(-217814400000)/",
+          "personIdExternal": "1008920"
+        },
+        "perpersonal": {
+          "gender": "F",
+          "lastName": "Shurmer",
+          "firstName": "Loraine",
+          "startDate": "/Date(1630454400000)/",
+          "__metadata": {
+            "uri": "PerPersonal",
+            "type": "SFOData.PerPersonal"
+          },
+          "personIdExternal": "1008920"
+        },
+        "empemployment": {
+          "userId": "1008920",
+          "startDate": "/Date(1630454400000)/",
+          "__metadata": {
+            "uri": "EmpEmployment",
+            "type": "SFOData.EmpEmployment"
+          },
+          "serviceDate": "/Date(1630454400000)/",
+          "customString8": "",
+          "personIdExternal": "1008920",
+          "originalStartDate": "/Date(1630454400000)/"
+        },
+        "empjobrelationships": [
+          {
+            "userId": "1008920",
+            "relUserId": "216649",
+            "startDate": "/Date(1759363200000)/",
+            "__metadata": {
+              "uri": "EmpJobRelationships",
+              "type": "SFOData.EmpJobRelationships"
+            },
+            "relationshipType": "18387"
+          }
+        ]
+      },
+      "timestamp": "2026-01-14 13:02:35"
+    }
+  ]
+}

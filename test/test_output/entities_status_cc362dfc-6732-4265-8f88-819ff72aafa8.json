@@ -1,0 +1,191 @@
+{
+  "8000173": {
+    "failed_entities": [
+      "PerPhone",
+      "EmpJobRelationships"
+    ],
+    "successful_entities": [
+      "Position",
+      "PerPerson",
+      "EmpEmployment",
+      "EmpJob",
+      "PerPersonal",
+      "PositionMatrixRelationships",
+      "PerEmail"
+    ]
+  },
+  "8000371": {
+    "failed_entities": [
+      "Position",
+      "PerPerson",
+      "EmpEmployment",
+      "EmpJob",
+      "PerPersonal",
+      "PositionMatrixRelationships",
+      "PerEmail",
+      "PerPhone",
+      "EmpJobRelationships"
+    ],
+    "successful_entities": null
+  },
+  "8000377": {
+    "failed_entities": [
+      "Position",
+      "PerPerson",
+      "EmpEmployment",
+      "EmpJob",
+      "PerPersonal",
+      "PositionMatrixRelationships",
+      "PerEmail",
+      "PerPhone",
+      "EmpJobRelationships"
+    ],
+    "successful_entities": null
+  },
+  "1308041": {
+    "failed_entities": [
+      "PerPhone"
+    ],
+    "successful_entities": [
+      "Position",
+      "PerPerson",
+      "EmpEmployment",
+      "EmpJob",
+      "PerPersonal",
+      "PositionMatrixRelationships",
+      "PerEmail",
+      "EmpJobRelationships"
+    ]
+  },
+  "946640": {
+    "failed_entities": [
+      "PositionMatrixRelationships",
+      "PerPhone"
+    ],
+    "successful_entities": [
+      "Position",
+      "PerPerson",
+      "EmpEmployment",
+      "EmpJob",
+      "PerPersonal",
+      "PerEmail",
+      "EmpJobRelationships"
+    ]
+  },
+  "7048950": {
+    "failed_entities": [
+      "Position",
+      "PerPhone"
+    ],
+    "successful_entities": [
+      "PerPersonal",
+      "PerEmail"
+    ]
+  },
+  "8000174": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "EmpJob",
+      "PerEmail"
+    ]
+  },
+  "8000315": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  },
+  "7022338": {
+    "failed_entities": [
+      "PositionMatrixRelationships",
+      "EmpJobRelationships"
+    ],
+    "successful_entities": [
+      "EmpEmployment",
+      "PerEmail",
+      "Position",
+      "EmpJob"
+    ]
+  },
+  "8000307": {
+    "failed_entities": [
+      "PositionMatrixRelationships",
+      "EmpJobRelationships"
+    ],
+    "successful_entities": [
+      "PerEmail",
+      "Position",
+      "EmpJob"
+    ]
+  },
+  "8000291": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  },
+  "8000411": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "EmpJob",
+      "PerEmail"
+    ]
+  },
+  "7054839": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  },
+  "8000146": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  },
+  "8000266": {
+    "failed_entities": [
+      "EmpJobRelationships"
+    ],
+    "successful_entities": [
+      "Position",
+      "PerEmail",
+      "PositionMatrixRelationships"
+    ]
+  },
+  "8000316": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  },
+  "7043676": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "EmpJob",
+      "PerEmail"
+    ]
+  },
+  "8000180": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  },
+  "7048238": {
+    "failed_entities": null,
+    "successful_entities": [
+      "Position",
+      "PerEmail"
+    ]
+  }
+}

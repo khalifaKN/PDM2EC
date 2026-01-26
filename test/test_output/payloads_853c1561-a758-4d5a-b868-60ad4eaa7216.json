@@ -1,0 +1,790 @@
+{
+  "run_id": "853c1561-a758-4d5a-b868-60ad4eaa7216",
+  "generated_at": "2026-01-23 16:25:18",
+  "total_failures": 15,
+  "total_warnings": 0,
+  "total_successes": 0,
+  "results": [
+    {
+      "user_id": "1005800",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Error deleting existing EmpJob for user 1005800: POST request to https://api55preview.sapsf.eu/odata/v2/upsert?$format=json failed with client error 400",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "empjob": [
+          {
+            "userId": "1005800",
+            "company": "CY71",
+            "position": "1001731",
+            "managerId": "399443",
+            "seqNumber": 2,
+            "startDate": "/Date(1635033600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "CY71_10NM",
+            "eventReason": "DATACHG"
+          }
+        ],
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "philippos.tsangaris@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "1005800"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "512",
+          "division": "2631",
+          "location": "1007276030",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10NM",
+          "changeReason": "import",
+          "cust_subUnit": "2746",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001724',effectiveStartDate=datetime'2025-04-22T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2744",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        },
+        "empemployment": [
+          {
+            "userId": "1005800",
+            "startDate": "/Date(1635033600000)/",
+            "__metadata": {
+              "uri": "EmpEmployment",
+              "type": "SFOData.EmpEmployment"
+            },
+            "serviceDate": "/Date(1635033600000)/",
+            "customString8": "",
+            "personIdExternal": "1005800",
+            "originalStartDate": "/Date(1635033600000)/"
+          }
+        ],
+        "empinitloadjob": [
+          {
+            "userId": "1005800",
+            "company": "CY71",
+            "position": "1020230",
+            "managerId": "399443",
+            "seqNumber": 1,
+            "startDate": "/Date(1635033600000)/",
+            "__metadata": {
+              "uri": "EmpJob",
+              "type": "SFOData.EmpJob"
+            },
+            "costCenter": "CY71_10NM",
+            "eventReason": "INITLOAD"
+          }
+        ]
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "7012134",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "panayiota.panayiotou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "7012134"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "506",
+          "division": "39",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10AI",
+          "changeReason": "import",
+          "cust_subUnit": "3349",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1027",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "1028131",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "martha.zacharia@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "1028131"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "5343",
+          "division": "44",
+          "location": "1007276030",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10SPO",
+          "changeReason": "import",
+          "cust_subUnit": "1940",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "584",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "710250",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "maria.agapiou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "710250"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "540",
+          "division": "40",
+          "location": "1007276030",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10IS",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "81124",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "chrysanthi.papanicolaou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "81124"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "508",
+          "division": "39",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10ZA",
+          "changeReason": "import",
+          "cust_subUnit": "1709",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2980",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "116019",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "athinoulla.paphite@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "116019"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "1045",
+          "division": "40",
+          "location": "1000409695",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10SP",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "171240",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "raffi.nalbandian@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "171240"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "3651",
+          "division": "40",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10IS",
+          "changeReason": "import",
+          "cust_subUnit": "1267",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "7030523",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "skevi.demetriadou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "7030523"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "3406",
+          "division": "40",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10ESE",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "81125",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "yianna.vrahimi@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "81125"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "510",
+          "division": "40",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10IS",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "1204691",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "giorgos.makrygiorgis@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "1204691"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "1010",
+          "division": "1066",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10SP",
+          "changeReason": "import",
+          "cust_subUnit": "1924",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "2971",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "116015",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "kalia.koutsidou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "116015"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "1041",
+          "division": "40",
+          "location": "1000409695",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10SP",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "7026096",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "christina.charalambous@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "7026096"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "1619",
+          "division": "40",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10SP",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "81129",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "lena.nicolaidou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "81129"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "3121",
+          "division": "45",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10NF",
+          "changeReason": "import",
+          "cust_subUnit": "3389",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "977",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "4907",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "paul.georgiades@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "4907"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "4175",
+          "division": "40",
+          "location": "1000078470",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10RST",
+          "changeReason": "import",
+          "cust_subUnit": "1887",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1000559',effectiveStartDate=datetime'2023-10-01T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "122",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    },
+    {
+      "user_id": "282672",
+      "operation": "UPDATE",
+      "status": "FAILED",
+      "error_message": "ERRORS (1):\n  1) Employment builder not initialized",
+      "warning_message": null,
+      "success_message": null,
+      "is_scm": null,
+      "is_im": null,
+      "payloads": {
+        "peremail": {
+          "emailType": "18242",
+          "isPrimary": true,
+          "__metadata": {
+            "uri": "PerEmail",
+            "type": "SFOData.PerEmail"
+          },
+          "emailAddress": "ioanna.nicolaou@kuehne-nagel.com",
+          "_email_action": "PROMOTE",
+          "personIdExternal": "282672"
+        },
+        "position": {
+          "company": "CY71",
+          "jobCode": "540",
+          "division": "40",
+          "location": "1000409695",
+          "__metadata": {
+            "uri": "Position",
+            "type": "SFOData.Position"
+          },
+          "costCenter": "CY71_10IS",
+          "changeReason": "import",
+          "cust_subUnit": "1273",
+          "standardHours": "40",
+          "parentPosition": {
+            "__metadata": {
+              "uri": "https://api55preview.sapsf.eu/odata/v2/Position(code='1001731',effectiveStartDate=datetime'2025-04-23T00:00:00')"
+            }
+          },
+          "effectiveStatus": "A",
+          "effectiveStartDate": "/Date(-2208988800000)/",
+          "technicalParameters": "SYNC",
+          "cust_geographicalScope": "1135",
+          "cust_Email_Address_Required": false,
+          "cust_Country_Of_Registration": "CYP"
+        }
+      },
+      "timestamp": "2026-01-23 14:25:15"
+    }
+  ]
+}

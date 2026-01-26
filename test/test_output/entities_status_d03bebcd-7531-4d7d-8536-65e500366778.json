@@ -1,0 +1,16 @@
+{
+  "1005800": {
+    "failed_entities": [
+      "EmpJobRelationships",
+      "PerPhone"
+    ],
+    "successful_entities": [
+      "PerEmail",
+      "EmpJob",
+      "EmpEmployment",
+      "Position",
+      "PerPerson"
+    ],
+    "skipped_entities": null
+  }
+}

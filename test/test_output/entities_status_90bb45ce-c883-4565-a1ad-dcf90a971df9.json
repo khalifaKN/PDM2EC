@@ -1,0 +1,109 @@
+{
+  "1005800": {
+    "failed_entities": [
+      "PerEmail",
+      "Position",
+      "PerPhone"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "7012134": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "1028131": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "710250": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "81124": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "116019": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "171240": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "7030523": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "81125": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "1204691": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "116015": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "7026096": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "81129": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "4907": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  },
+  "282672": {
+    "failed_entities": [
+      "PerEmail"
+    ],
+    "successful_entities": null,
+    "skipped_entities": null
+  }
+}
