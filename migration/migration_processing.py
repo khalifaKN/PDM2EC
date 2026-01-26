@@ -461,7 +461,7 @@ class MigrationProcessor(CoreProcessor):
             
             Logger.info(f"Building actual EmpJob for user {user_id} with position {position}")
 
-            actual_empjob_payload = actual_builder.build_empjob_payload()
+            actual_empjob_payload = actual_builder.build_empjob_payload(migration_flag=True)
             if not actual_empjob_payload:
                 ctx.fail(f"Failed to build empjob payload for user {user_id}")
                 return
