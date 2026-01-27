@@ -1812,11 +1812,25 @@ class CoreProcessor:
                 results=results,
                 ec_user_id=ctx.ec_user_id,
             )
+            # Below not the same logic as migration, because we don't have any dummy positions here
+            # and if _build_position_update won't be triggred unless there are dirty fields for Position and EmpJob not in dirty entities
+            # because if EmpJob is in dirty entities, Position will be triggred after EmpJob update success to avoid conflicts.
+            # For this we update existing position if found, else create new position
+            # NB: If EmpJob is a part of the update, The position entity will be called after a SUCCESS EmpJob update
+            # in order to trigger the PositionToJobInfoSyncRule in SAP. 
             if has_position:
-                position_payload = position_builder.build_position(
-                    position_code_=ctx.position_code
-                )
+                # Update Position if EmpJob not in dirty entities
+                if "EmpJob" not in ctx.dirty_entities:
+                    position_payload = position_builder.build_position(
+                        position_code_=ctx.position_code
+                    )
+                else:
+                    Logger.info(
+                        f"Skipping Position update for user {user_id} as EmpJob is also being updated to avoid Trigger PositionToJobInfoSyncRule Twice and conflicts"
+                    )
+                    return
             else:
+                # If position Does NOT exists, Creating a new position with the provided details
                 position_payload = position_builder.build_position()
             if not position_payload:
                 ctx.fail(f"Failed to build position update payload for user {user_id}")

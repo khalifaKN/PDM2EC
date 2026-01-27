@@ -1,6 +1,8 @@
 class UserExecutionContext:
     def __init__(self, user_id: str):
-        """Context for processing a single user's data through the orchestrator.
+        """
+        Description:
+        Context for processing a single user's data through the orchestrator.
         Attributes:
             user_id (str): The USERID of the user being processed.
             payloads (dict): A dictionary to hold generated payloads for different entities.

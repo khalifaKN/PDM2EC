@@ -424,7 +424,7 @@ class MigrationProcessor(CoreProcessor):
             ctx.fail(f"Error processing user {ctx.user_id}: {e}")
 
     def _handle_employment(
-        self, row: pd.Series, ctx: UserExecutionContext, results: dict
+        self, row: pd.Series, ctx: UserExecutionContext, results: dict, is_update: bool = False
     ):
         """
         Build EmpEmployment and EmpJob payloads for the user.
@@ -433,13 +433,15 @@ class MigrationProcessor(CoreProcessor):
             user_id = ctx.user_id
             Logger.info(f"_handle_employment called for user {user_id}")
 
-            # Check if Dependencies not in dirty entities, we put it as SUCCESS To proceed the retry after creating position
-            # and verify the function _can_execute_entity without blocking the user processing
-            # which check ctx.runtime["entity_status"].get(dep) == "SUCCESS" for dependencies, in this Case PerPerson, Position is dependency for Employment
-            deps = self.ENTITY_DEPENDENCIES.get("EmpEmployment", [])
-            for dep in deps:
-                if dep not in ctx.dirty_entities:
-                    ctx.runtime["entity_status"][dep] = "SUCCESS"
+            if is_update:
+                for entity in ["EmpEmployment", "EmpJob"]:
+                    # Check if Dependencies not in dirty entities, we put it as SUCCESS To proceed the retry after creating position
+                    # and verify the function _can_execute_entity without blocking the user processing
+                    # which check ctx.runtime["entity_status"].get(dep) == "SUCCESS" for dependencies, in this Case PerPerson, Position is dependency for Employment
+                    deps = self.ENTITY_DEPENDENCIES.get(entity, [])
+                    for dep in deps:
+                        if dep not in ctx.dirty_entities:
+                            ctx.runtime["entity_status"][dep] = "SUCCESS"
             # Validate dummy position
             dummy_position = ctx.dummy_position
             if not dummy_position:
@@ -757,6 +759,8 @@ class MigrationProcessor(CoreProcessor):
                 ec_user_id=ctx.ec_user_id,
             )
             if has_position:
+                # Mark position as SUCCESS since it already exists (no action needed)
+                ctx.runtime["entity_status"]["Position"] = "SUCCESS"
                 return
             else:
                 position_payload = position_builder.build_position(
