@@ -1095,6 +1095,13 @@ class CoreProcessor:
                 else ""
             )
             ec_role = ""
+
+            # Mark dependencies as SUCCESS if not dirty to not block processing
+            deps = self.ENTITY_DEPENDENCIES.get("UserRole", [])
+            for dep in deps:
+                if dep not in ctx.dirty_entities:
+                    ctx.runtime["entity_status"][dep] = "SUCCESS"
+
             # Retrieve EC role from Postgres cache
             ec_roles_df = self.postgres_cache.get("ec_data_df")
             if ec_roles_df is not None and not ec_roles_df.empty:
@@ -1840,6 +1847,12 @@ class CoreProcessor:
             Logger.info(
                 f"Building Person updates for user {user_id}, entities: {dirty_entities}"
             )
+            # Mark dependencies as SUCCESS if not dirty to not block processing
+            for entity in ["PerPerson", "PerPersonal", "PerEmail", "PerPhone"]:
+                deps = self.ENTITY_DEPENDENCIES.get(entity, [])
+                for dep in deps:
+                    if dep not in ctx.dirty_entities:
+                        ctx.runtime["entity_status"][dep] = "SUCCESS"
 
             # Build PersonPayloadBuilder once for all person entities
             # Use start_of_employment (hire date) for PerPersonal, not date_of_position
@@ -2108,6 +2121,13 @@ class CoreProcessor:
         Only builds the entities that are in dirty_entities.
         """
         try:
+            # Mark dependencies as SUCCESS if not dirty to not block processing
+            for entity in ["EmpEmployment", "EmpJob", "EmpJobRelationships"]:
+                deps = self.ENTITY_DEPENDENCIES.get(entity, [])
+                for dep in deps:
+                    if dep not in ctx.dirty_entities:
+                        ctx.runtime["entity_status"][dep] = "SUCCESS"
+
             user_id = ctx.user_id
             Logger.info(
                 f"Building Employment updates for user {user_id}, entities: {dirty_entities}"
@@ -2264,6 +2284,12 @@ class CoreProcessor:
         Build PositionMatrixRelationship payloads for update (both matrix_manager and hr).
         """
         try:
+            # Mark dependencies as SUCCESS if not dirty to not block processing
+            deps = self.ENTITY_DEPENDENCIES.get("PositionMatrixRelationships", [])
+            for dep in deps:
+                if dep not in ctx.dirty_entities:
+                    ctx.runtime["entity_status"][dep] = "SUCCESS"
+
             user_id = ctx.user_id
             Logger.info(
                 f"Building PositionMatrixRelationship update for user {user_id}"

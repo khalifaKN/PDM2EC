@@ -282,51 +282,6 @@ class MigrationProcessor(CoreProcessor):
                 f"Error in _create_or_get_dummy_position for jobcode {self.job_code}: {e}"
             ) from e
 
-    # def _delete_existing_empjob(self, ctx: UserExecutionContext):
-    #     """
-    #     Deletes existing EmpJob records for the user being migrated.
-    #     To do so, we use a dummy EmpJob payload with purgeType full.
-    #     Args:
-    #         ctx (UserExecutionContext): The user execution context.
-    #     """
-    #     try:
-    #         # Delete and Initial Load EmpJob records if they exist
-    #         user_id = ctx.user_id
-    #         if ctx.has_existing_empjob:
-    #             Logger.info(f"Reset EmpJob records for user {user_id} and putting dummy position")
-    #             dummy_empjob = ctx.payloads.get("empinitloadjob", [])
-    #             if dummy_empjob:
-    #                 params = {
-    #                     "purgeType": "full"
-    #                 }
-    #                 payload = ctx.payloads.get("empinitloadjob")[0]
-    #                 if payload is None:
-    #                     Logger.error(f"No dummy EmpJob payload found to reset for user {user_id}.")
-    #                     ctx.fail(f"No dummy EmpJob payload found to reset for user {user_id}.")
-    #                     return
-    #                 response = self.upsert_client.upsert_entity(
-    #                     entity_name="EmpJob Reset",
-    #                     payload=payload,
-    #                     parameters=params
-    #                 )
-    #                 results = response.get("d", [])
-    #                 for result in results:
-    #                     http_code = result.get("httpCode", 200)
-    #                     if http_code and 200 <= http_code < 300:
-    #                         Logger.info(f"Successfully deleted EmpJob record for user {user_id} with dummy position.")
-    #                     else:
-    #                         Logger.error(f"Failed to delete EmpJob record for user {user_id}. Response: {result}")
-    #                         ctx.fail(f"Failed to reset EmpJob record for user {user_id}.")
-    #                         return
-    #             else:
-    #                 Logger.error(f"No dummy EmpJob payload found to reset for user {user_id}.")
-    #                 ctx.fail(f"No dummy EmpJob payload found to reset for user {user_id}.")
-    #                 return
-    #     except Exception as e:
-    #         Logger.error(f"Error deleting existing EmpJob for user {user_id}: {e}")
-    #         ctx.fail(f"Error deleting existing EmpJob for user {ctx.user_id}: {e}")
-    #         return
-
     def _has_existing_empjob(
         self, user_id: str, ec_user_id: str, dummy_position: str
     ) -> bool:
@@ -431,15 +386,6 @@ class MigrationProcessor(CoreProcessor):
             self._handle_employment(row, ctx, results)
             if ctx.has_errors:
                 return
-
-            # DELETE EXISTING EMPJOB IF ANY
-            # if ctx.has_existing_empjob:
-            #     Logger.info(f"Deleting existing EmpJob for user {user_id}")
-            #     self._delete_existing_empjob(ctx)
-            #     if ctx.has_errors:
-            #         Logger.error(f"Early return after deleting existing EmpJob for {user_id} due to errors: {ctx.errors}")
-            #         ctx.payloads["empjob"] = []  # Clear empjob payloads to avoid further processing
-            #         return
 
             # POSITION MATRIX RELATIONSHIPS
             position_builder = ctx.builders.get("position")
@@ -708,16 +654,7 @@ class MigrationProcessor(CoreProcessor):
         self._handle_employment(row, ctx, results)
         if ctx.has_errors:
             return
-
-        # DELETE EXISTING EMPJOB IF ANY
-        # if ctx.has_existing_empjob:
-        #     self._delete_existing_empjob(ctx)
-        #     if ctx.has_errors:
-        #         Logger.error(f"Early return after deleting existing EmpJob for {user_id} due to errors: {ctx.errors}")
-        #         ctx.payloads["empjob"] = []  # Clear empjob payloads to avoid further processing
-        #         return
-        # else:
-        #     Logger.info(f"No existing EmpJob to delete for user {user_id}")
+        
         # Position relationship updates
         if "PositionMatrixRelationships" in dirty_entities:
             self._build_position_relationship_update(row, ctx, results)
@@ -789,6 +726,7 @@ class MigrationProcessor(CoreProcessor):
             job_match = job_mappings[job_mappings["jobcode"] == job_code]
 
             if job_match.empty:
+                Logger.error(f"No job mapping found for jobcode {job_code}")
                 ctx.fail(f"No job mapping found for jobcode {job_code}")
                 return
 
@@ -836,8 +774,10 @@ class MigrationProcessor(CoreProcessor):
                     )
             ctx.payloads["position"] = position_payload
             ctx.builders["position"] = position_builder
-            Logger.info(f"Position update payload built for user {user_id}")
             ctx.runtime["position_payload_built"] = True
+            Logger.info(f"Position update payload built for user {user_id}")
+
 
         except Exception as e:
             ctx.fail(f"Error building position update for user {ctx.user_id}: {e}")
+            Logger.error(f"Error building position update for user {ctx.user_id}: {e}")
