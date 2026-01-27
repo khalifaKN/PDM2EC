@@ -3,7 +3,7 @@ def get_user_role_payload():
     returns:
     {
         "__metadata": {
-            "uri": "User",
+            "uri": "User('{user_id}')",
             "type": "SFOData.User"
         },
         "userId": user_id,
@@ -12,7 +12,7 @@ def get_user_role_payload():
     """
     return {
         "__metadata": {
-            "uri": "User",
+            "uri": "User('{user_id}')",
             "type": "SFOData.User"
             },
         "userId": "",

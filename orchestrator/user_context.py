@@ -10,7 +10,7 @@ class UserExecutionContext:
             runtime (dict): A dictionary for storing runtime information during processing. Like entity_status and others,
             that's very important for dependency management between entities and processing steps.
             dirty_entities (set): A set of entity names that require updating for this user, it's filled of field changes detected.
-            is_update (bool): Flag indicating whether the user is being updated (True) or created (False). 
+            is_update (bool): Flag indicating whether the user is being updated (True) or created (False).
             This affects payload generation and entity processing logic including handling of dependencies.
         """
         self.user_id = user_id
@@ -19,12 +19,12 @@ class UserExecutionContext:
         self.warnings = []
         self.builders = {}
         self.runtime = {}
-        self.is_scm= False
-        self.is_im= False
-        self.ec_user_id= None
-        self.dummy_position= None
-        self.has_existing_empjob= False
-        self.empjob_start_date= None
+        self.is_scm = False
+        self.is_im = False
+        self.ec_user_id = None
+        self.dummy_position = None
+        self.has_existing_empjob = False
+        self.empjob_start_date = None
         self.position_code = None  # Store position code for employment processing
         self.dirty_entities = set()
         self.is_update = False

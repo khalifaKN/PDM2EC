@@ -7,7 +7,7 @@ Logger = get_logger("build_user_payloads")
 def build_user_inactive_payload(user_id: str):
     try:
         payload = get_user_inactive_payload()
-        payload["userId"] = user_id
+        payload["__metadata"]["uri"] = f"User('{user_id}')"
         payload["status"] = "inactive"
         return payload
     except Exception as e:
@@ -17,6 +17,7 @@ def build_user_inactive_payload(user_id: str):
 def build_user_role_payload(user_id: str, role_code: str):
     try:
         payload = get_user_role_payload()
+        payload["__metadata"]["uri"] = f"User('{user_id}')"
         payload["userId"] = user_id
         payload["custom08"] = role_code
         return payload

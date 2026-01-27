@@ -43,9 +43,15 @@ class UpsertClient:
             for attempt in range(1, self.max_retries + 1):
                 try:
                     # Use SAP SuccessFactors upsert endpoint with array payload
+                    params_ = None
+                    if entity_name == "EmpInitLoadJob":
+                        params_ = {
+                                     "purgeType": "full"
+                                }
                     response = self.api_client.post(
                         "/odata/v2/upsert?$format=json",
-                        json=chunk_payloads
+                        json=chunk_payloads,
+                        params= params_ if params_ else None
                     )
                     # Check if all records have client errors (400-499) - if so, No retry
                     records = response.get("d", [])

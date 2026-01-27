@@ -13,3 +13,7 @@ troubleshoot/
 test/test_outputs/
 test/test_output/
 test/test_outputs_v1.0/
+
+# pycache
+**/__pycache__/
+**/*.pyc
