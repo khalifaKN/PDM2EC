@@ -58,6 +58,15 @@ class UpsertClient:
                     if records:
                         http_codes = [r.get("httpCode", 200) for r in records]
                         all_client_errors = all(400 <= code < 500 for code in http_codes if code)
+                        #Retry 412 errors
+                        if any(code == 412 for code in http_codes):
+                                logger.warning(f"{entity_name} chunk got 412 – retrying attempt {attempt}")
+                                if attempt < self.max_retries:
+                                    time.sleep(2 ** attempt)
+                                    continue  # retry entire chunk
+                                else:
+                                    logger.error(f"{entity_name} chunk failed due to repeated 412 errors")
+                                    break
                         #logging each payload with its response
                         for r in records:
                             idx = r.get("index")

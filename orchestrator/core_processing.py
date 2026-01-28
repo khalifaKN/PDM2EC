@@ -450,7 +450,7 @@ class CoreProcessor:
             if not employment_builder:
                 ctx.fail("Employment builder not initialized")
                 return
-            self._handle_relationships(row, ctx, employment_builder)
+            self._handle_relationships(row, ctx, employment_builder, results=results)
         except Exception as e:
             ctx.fail(f"Error processing user {ctx.user_id}: {e}")
 
@@ -668,60 +668,60 @@ class CoreProcessor:
             Logger.info(f"✓ PerPersonal payload built for user {user_id}")
 
             # PerEmail payload (Business Email)
-            if row.get("email") is None or pd.isna(row.get("email")):
-                ctx.warn(
-                    f"Email is missing for user {user_id}, skipping PerEmail payload"
-                )
-            else:
-                private_email = row.get("private_email")
-                if (
-                    not private_email
-                    or pd.isna(private_email)
-                    or str(private_email).strip().lower() == "false"
-                ):
-                    private_email = False
-                else:
-                    private_email = True
-                peremail_payload = person_builder.build_peremail_payload(
-                    is_business_email=not private_email
-                )
-                if not peremail_payload:
-                    err = getattr(person_builder, "last_error", None)
-                    extra = f" Builder error: {err}" if err else ""
-                    ctx.fail(
-                        f"Failed to build peremail payload for user {user_id}.{extra}"
-                    )
-                    return
-                ctx.payloads["peremail"] = peremail_payload
+            # if row.get("email") is None or pd.isna(row.get("email")):
+            #     ctx.warn(
+            #         f"Email is missing for user {user_id}, skipping PerEmail payload"
+            #     )
+            # else:
+            #     private_email = row.get("private_email")
+            #     if (
+            #         not private_email
+            #         or pd.isna(private_email)
+            #         or str(private_email).strip().lower() == "false"
+            #     ):
+            #         private_email = False
+            #     else:
+            #         private_email = True
+            #     peremail_payload = person_builder.build_peremail_payload(
+            #         is_business_email=not private_email
+            #     )
+            #     if not peremail_payload:
+            #         err = getattr(person_builder, "last_error", None)
+            #         extra = f" Builder error: {err}" if err else ""
+            #         ctx.fail(
+            #             f"Failed to build peremail payload for user {user_id}.{extra}"
+            #         )
+            #         return
+            #     ctx.payloads["peremail"] = peremail_payload
 
-            # PerEmail payload (Private Email)
-            if row.get("private_email") is None or pd.isna(row.get("private_email")):
-                Logger.info(
-                    f"Private Email is missing for user {user_id}, skipping PerEmail (private) payload"
-                )
-            else:
-                peremail_private_payload = person_builder.build_peremail_payload(
-                    is_business_email=False
-                )
-                if not peremail_private_payload:
-                    err = getattr(person_builder, "last_error", None)
-                    extra = f" Builder error: {err}" if err else ""
-                    ctx.fail(
-                        f"Failed to build peremail (private) payload for user {user_id}.{extra}"
-                    )
-                    return
-                # Extend existing peremail payloads to include private email if both exist
-                if "peremail" in ctx.payloads:
-                    existing_payload = ctx.payloads["peremail"]
-                    if isinstance(existing_payload, list):
-                        existing_payload.append(peremail_private_payload)
-                    else:
-                        ctx.payloads["peremail"] = [
-                            existing_payload,
-                            peremail_private_payload,
-                        ]
-                else:
-                    ctx.payloads["peremail"] = peremail_private_payload
+            # # PerEmail payload (Private Email)
+            # if row.get("private_email") is None or pd.isna(row.get("private_email")):
+            #     Logger.info(
+            #         f"Private Email is missing for user {user_id}, skipping PerEmail (private) payload"
+            #     )
+            # else:
+            #     peremail_private_payload = person_builder.build_peremail_payload(
+            #         is_business_email=False
+            #     )
+            #     if not peremail_private_payload:
+            #         err = getattr(person_builder, "last_error", None)
+            #         extra = f" Builder error: {err}" if err else ""
+            #         ctx.fail(
+            #             f"Failed to build peremail (private) payload for user {user_id}.{extra}"
+            #         )
+            #         return
+            #     # Extend existing peremail payloads to include private email if both exist
+            #     if "peremail" in ctx.payloads:
+            #         existing_payload = ctx.payloads["peremail"]
+            #         if isinstance(existing_payload, list):
+            #             existing_payload.append(peremail_private_payload)
+            #         else:
+            #             ctx.payloads["peremail"] = [
+            #                 existing_payload,
+            #                 peremail_private_payload,
+            #             ]
+            #     else:
+            #         ctx.payloads["peremail"] = peremail_private_payload
             # PerPhone payload
             if row.get("phone") is None or pd.isna(row.get("phone")):
                 Logger.info(
@@ -858,9 +858,7 @@ class CoreProcessor:
                 else:
                     # User has no position and we didn't create one - this is an error
                     Logger.info(f"Checking positions cache for user {user_id}")
-                    position = employment_validator.get_position_code_from_positions(
-                        row
-                    )
+                    position = employment_validator.position_code_exists_in_employees()
                     Logger.info(f"Position from cache for {user_id}: {position}")
                     if not position:
                         ctx.fail(
@@ -939,6 +937,7 @@ class CoreProcessor:
         row: pd.Series,
         ctx: UserExecutionContext,
         employment_builder: EmploymentPayloadBuilder,
+        results: dict = None,
     ):
         """
         Build EmpJobRelationships payloads (HR / Matrix Manager).
@@ -954,128 +953,184 @@ class CoreProcessor:
         3. Add relationship payloads to context.
         """
         try:
-            rel_payloads = []
-
-            # Use the latest date between employee's position date and relationship person's position date
-            # This ensures the relationship starts when both people are in their current positions
-
-            # Get employee's position start date (from date_of_position field)
-
             if not employment_builder:
                 ctx.fail("Employment builder not initialized for relationships")
                 return
 
-            employee_position_date = row.get("date_of_position", "")
-            hire_start_date = employment_builder.start_of_employment
-            # HR relationship - SAP picklist ID: 18387
-            hr_manager = row.get("hr", "").strip() if pd.notna(row.get("hr")) else ""
-            if hr_manager and hr_manager not in ["", "NO_HR", "NO_MANAGER"]:
-                # Use the later date: employee's position date or HR's position date
-                hr_position_date = row.get("hr_position_start_date", "")
-                relationship_start_date = self._get_relationship_start_date(
-                    hire_start_date=hire_start_date,
-                    employee_position_date=employee_position_date,
-                    relationship_person_position_date=hr_position_date,
-                )
+            rel_payloads = []
 
-                hr_payload = employment_builder.build_empjob_relationships_payload(
-                    rel_user_id=hr_manager,
-                    relationship_type="18387",
-                    start_date=relationship_start_date,
-                )
-                if hr_payload:
-                    rel_payloads.append(hr_payload)
-                else:
-                    ctx.fail("HR relationship payload failed")
-
-            # Matrix manager relationship - SAP picklist ID: 18385
-            matrix_manager = (
-                row.get("matrix_manager", "").strip()
-                if pd.notna(row.get("matrix_manager"))
-                else ""
+            # HR relationship
+            self._process_relationship(
+                ctx=ctx,
+                row=row,
+                builder=employment_builder,
+                results=results,
+                rel_payloads=rel_payloads,
+                relation_user=row.get("hr"),
+                relationship_type="18387",
+                label="HR",
             )
-            matrix_position_date = row.get("matrix_manager_position_start_date", "")
-            if matrix_manager and matrix_manager not in ["", "NO_HR", "NO_MANAGER"]:
-                # Use the later date: employee's position date or matrix manager's position date
-                relationship_start_date = self._get_relationship_start_date(
-                    hire_start_date=hire_start_date,
-                    employee_position_date=employee_position_date,
-                    relationship_person_position_date=matrix_position_date,
-                )
 
-                matrix_payload = employment_builder.build_empjob_relationships_payload(
-                    rel_user_id=matrix_manager,
-                    relationship_type="18385",
-                    start_date=relationship_start_date,
-                )
-                if matrix_payload:
-                    rel_payloads.append(matrix_payload)
-                else:
-                    ctx.fail("Matrix manager relationship payload failed")
+            # Matrix Manager relationship
+            self._process_relationship(
+                ctx=ctx,
+                row=row,
+                builder=employment_builder,
+                results=results,
+                rel_payloads=rel_payloads,
+                relation_user=row.get("matrix_manager"),
+                relationship_type="18385",
+                label="Matrix Manager",
+            )
 
             if rel_payloads:
                 ctx.payloads["empjobrelationships"] = rel_payloads
             else:
                 Logger.info(f"No relationships to build for user {ctx.user_id}")
+
         except Exception as e:
             ctx.fail(f"Error building relationships for user {ctx.user_id}: {e}")
 
-    def _get_relationship_start_date(
+    def _process_relationship(
         self,
-        hire_start_date: str,
-        employee_position_date: str,
-        relationship_person_position_date: str,
+        *,
+        ctx: UserExecutionContext,
+        row: pd.Series,
+        builder: EmploymentPayloadBuilder,
+        results: dict,
+        rel_payloads: list,
+        relation_user: str,
+        relationship_type: str,
+        label: str,
+    ):
+        if not relation_user or not pd.notna(relation_user):
+            return
+
+        relation_user = str(relation_user).strip()
+        if relation_user in {"", "NO_HR", "NO_MANAGER"}:
+            return
+
+        existing_rel, existing_start_date = self._get_relationship_if_exists(
+            user_id=ctx.user_id,
+            relation_type=relationship_type,
+        )
+
+        # Same relationship already exists → skip only this relationship
+        if existing_rel and existing_rel.lower() == relation_user.lower():
+            Logger.info(
+                f"{label} relationship already exists for user {ctx.user_id} with {relation_user}, skipping."
+            )
+            return
+
+        # Different relationship exists → delete old one
+        if existing_rel and existing_rel.lower() != relation_user.lower():
+            Logger.info(
+                f"User {ctx.user_id} has existing {label} relationship with {existing_rel}, "
+                f"but new {label} is {relation_user}. Deleting old relationship."
+            )
+            delete_payload = builder.build_empjob_relationships_payload(
+                old_rel_user_id=existing_rel,
+                relationship_type=relationship_type,
+                relationship_start_date=existing_start_date,
+            )
+            if delete_payload:
+                rel_payloads.append(delete_payload)
+            else:
+                ctx.fail(f"Failed to build delete payload for old {label} relationship")
+                return
+
+        relationship_start_date = self._resolve_relationship_start_date(
+            relation_user_id=relation_user,
+            employee_row=row,
+            existing_start_date=existing_start_date,
+            results=results,
+        )
+
+        create_payload = builder.build_empjob_relationships_payload(
+            rel_user_id=relation_user,
+            relationship_type=relationship_type,
+            relationship_start_date=relationship_start_date,
+        )
+
+        if create_payload:
+            rel_payloads.append(create_payload)
+        else:
+            ctx.fail(f"{label} relationship payload failed")
+
+    def _resolve_relationship_start_date(
+        self,
+        *,
+        relation_user_id: str,
+        employee_row: pd.Series,
+        existing_start_date: str | None,
+        results: dict,
     ) -> str:
         """
-        Relationship start date must be >=:
-        - Hire start date
-        - Employee position start date
-        - Relationship person's position start date
+        Resolve relationship start date ensuring SAP business key uniqueness.
         """
 
-        def _to_ts(date_str):
-            if not date_str:
-                return None
-
-            s = str(date_str).strip()
-
-            # Already in OData format
-            if s.startswith("/Date(") and s.endswith(")/"):
-                return int(s.replace("/Date(", "").replace(")/", ""))
-
-            try:
-                dt = datetime.strptime(s, "%m/%d/%Y")
-                return int(
-                    convert_to_unix_timestamp(dt.strftime("%m/%d/%Y"))
-                    .replace("/Date(", "")
-                    .replace(")/", "")
-                )
-            except Exception:
-                return None
-
-        timestamps = list(
-            filter(
-                None,
-                [
-                    _to_ts(hire_start_date),
-                    _to_ts(employee_position_date),
-                    _to_ts(relationship_person_position_date),
-                ],
-            )
+        # Default: use relation user's position date
+        relationship_start_date = self._get_relationship_start_date(
+            relation_user_id=relation_user_id,
+            results=results,
         )
 
-        # Absolute fallback (should rarely happen)
-        selected_ts = (
-            max(timestamps)
-            if timestamps
-            else int(
-                convert_to_unix_timestamp(datetime.now().strftime("%m/%d/%Y"))
-                .replace("/Date(", "")
-                .replace(")/", "")
+        # Fallback to employee start date
+        if not relationship_start_date:
+            relationship_start_date = convert_to_unix_timestamp(
+                employee_row.get("start_of_employment")
             )
-        )
 
-        return f"/Date({selected_ts})/"
+        # Avoid SAP business key collision
+        if existing_start_date:
+            existing_ts = int(existing_start_date.strip("/Date()")) // 1000
+            new_ts = int(relationship_start_date.strip("/Date()")) // 1000
+
+            if new_ts <= existing_ts:
+                new_ts = existing_ts + 86400  # +1 day
+                relationship_start_date = f"/Date({new_ts * 1000})/"
+
+        return relationship_start_date
+
+    def _get_relationship_start_date(self, relation_user_id: str, results: dict):
+        """
+        Retrieve the relationship start date from either Results if its in current Processing or EmpJob cache.
+        """
+        user_id = str(relation_user_id).strip().lower()
+        ctx = results.get(user_id)
+        if ctx:
+            row = ctx.runtime["original_row"]
+            position_date = row.get("date_of_position")
+            if position_date:
+                return convert_to_unix_timestamp(position_date)
+
+        # Fallback to EmpJob cache
+        emp_cache = self.sap_cache.get("empjob_data_df")
+        if emp_cache is not None and not emp_cache.empty:
+            rel_empjob_row = emp_cache[
+                emp_cache["userid"].astype(str).str.lower() == user_id
+            ]
+            if not rel_empjob_row.empty:
+                start_date = rel_empjob_row.iloc[0]["startdate"]
+                return start_date
+
+    def _get_relationship_if_exists(self, user_id: str, relation_type: str):
+        """
+        Retrieve existing relationship of a given type for a user from EmpJobRelationships cache if exists.
+        Return:
+        Relation ID and Start Date.
+        """
+        empjob_rel_cache = self.sap_cache.get("empjobrelationships_df")
+        if empjob_rel_cache is not None and not empjob_rel_cache.empty:
+            rel_rows = empjob_rel_cache[
+                (empjob_rel_cache["userid"].astype(str).str.lower() == user_id.lower())
+                & (empjob_rel_cache["relationshiptype"] == relation_type)
+            ]
+            if not rel_rows.empty:
+                relation_row = rel_rows.iloc[0]
+                return relation_row["reluserid"], relation_row["startdate"]
+
+        return None, None
 
     def _handle_ep_ec_roles(self, row: pd.Series, ctx: UserExecutionContext):
         """
@@ -1388,7 +1443,7 @@ class CoreProcessor:
                                     ctx, "EmpJobRelationships"
                                 ):
                                     self._handle_relationships(
-                                        row, ctx, ctx.builders.get("employment")
+                                        row, ctx, ctx.builders.get("employment"), results=results
                                     )
 
                                 # Collect payloads again if retry successful
@@ -1723,7 +1778,7 @@ class CoreProcessor:
         # Employment updates
         employment_entities = {"EmpEmployment", "EmpJob", "EmpJobRelationships"}
         if employment_entities & dirty_entities:
-            self._build_employment_updates(row, ctx, dirty_entities)
+            self._build_employment_updates(row, ctx, dirty_entities, results)
 
         # Position relationship updates
         if "PositionMatrixRelationships" in dirty_entities:
@@ -1817,7 +1872,7 @@ class CoreProcessor:
             # because if EmpJob is in dirty entities, Position will be triggred after EmpJob update success to avoid conflicts.
             # For this we update existing position if found, else create new position
             # NB: If EmpJob is a part of the update, The position entity will be called after a SUCCESS EmpJob update
-            # in order to trigger the PositionToJobInfoSyncRule in SAP. 
+            # in order to trigger the PositionToJobInfoSyncRule in SAP.
             if has_position:
                 # Update Position if EmpJob not in dirty entities
                 if "EmpJob" not in ctx.dirty_entities:
@@ -1913,8 +1968,8 @@ class CoreProcessor:
 
             # PerEmail (special handling via email actions): For more details, see _handle_email_updates method:
             # This allows more control over email insertions, updates, deletions, promotions, and demotions.
-            if "PerEmail" in dirty_entities:
-                self._handle_email_updates(ctx, person_builder)
+            # if "PerEmail" in dirty_entities:
+            #     self._handle_email_updates(ctx, person_builder)
 
             # PerPhone
             if "PerPhone" in dirty_entities:
@@ -2128,7 +2183,11 @@ class CoreProcessor:
             ctx.fail(f"Error handling email updates for {user_id}: {e}")
 
     def _build_employment_updates(
-        self, row: pd.Series, ctx: UserExecutionContext, dirty_entities: set
+        self,
+        row: pd.Series,
+        ctx: UserExecutionContext,
+        dirty_entities: set,
+        results: dict,
     ):
         """
         Build employment-related payloads (EmpEmployment, EmpJob, EmpJobRelationships) for updates.
@@ -2238,58 +2297,12 @@ class CoreProcessor:
 
             # EmpJobRelationships (manager, matrix manager, HR changes)
             if "EmpJobRelationships" in dirty_entities:
-                self._build_relationship_updates(row, ctx, employment_builder)
+                self._handle_relationships(
+                    row, ctx, employment_builder, results=results
+                )
 
         except Exception as e:
             ctx.fail(f"Error building employment updates for user {ctx.user_id}: {e}")
-
-    def _build_relationship_updates(
-        self,
-        row: pd.Series,
-        ctx: UserExecutionContext,
-        employment_builder: EmploymentPayloadBuilder,
-    ):
-        """
-        Build relationship payloads for updates (manager, matrix manager, HR).
-        """
-        try:
-            user_id = ctx.user_id
-            rel_payloads = []
-
-            # Matrix Manager relationship
-            matrix_manager = row.get("matrix_manager")
-            if matrix_manager and str(matrix_manager).strip().lower() not in [
-                "",
-                "none",
-                "no_manager",
-            ]:
-                matrix_payload = employment_builder.build_empjob_relationships_payload(
-                    rel_user_id=matrix_manager,
-                    relationship_type="18385",  # Matrix relationship
-                )
-                if matrix_payload:
-                    rel_payloads.append(matrix_payload)
-
-            # HR relationship
-            hr_id = row.get("hr")
-            if hr_id and str(hr_id).strip().lower() not in ["", "none", "no_hr"]:
-                hr_payload = employment_builder.build_empjob_relationships_payload(
-                    rel_user_id=hr_id,
-                    relationship_type="18387",  # HR
-                )
-                if hr_payload:
-                    rel_payloads.append(hr_payload)
-
-            if rel_payloads:
-                ctx.payloads["empjobrelationships"] = rel_payloads
-                Logger.info(
-                    f"Built {len(rel_payloads)} relationship update payload(s) for user {user_id}"
-                )
-            else:
-                Logger.info(f"No relationship updates for user {user_id}")
-
-        except Exception as e:
-            ctx.fail(f"Error building relationship updates for user {ctx.user_id}: {e}")
 
     def _build_position_relationship_update(
         self, row: pd.Series, ctx: UserExecutionContext, results: dict

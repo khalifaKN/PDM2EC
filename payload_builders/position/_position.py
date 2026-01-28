@@ -193,7 +193,28 @@ class PositionPayloadBuilder:
             msg = f"Error checking position code existence for user ID {self.user_id}: {str(e)}"
             Logger.error(msg)
             return None
-
+        
+    def _get_relation_position_from_context(self, relation_ec_userid: str):
+        """Check if Relation position code is present in current results context."""
+        
+        try:
+            user_id = str(relation_ec_userid).strip().lower()
+            ctx = self.results.get(user_id)
+    
+            if ctx and ctx.position_code:
+                position_code = str(ctx.position_code).strip().lower()
+                Logger.info(
+                    f"Position code {position_code} found in context for Relation user ID {relation_ec_userid}."
+                )
+                return position_code
+            return None
+    
+        except Exception:
+            Logger.error(
+                f"Error checking position code in context for Relation user ID {relation_ec_userid}",
+                exc_info=True
+            )
+            return None
     
     def _get_position_uri(self, position_code):
         """Retrieve position URI using cached positions data."""
@@ -258,11 +279,8 @@ class PositionPayloadBuilder:
         manager_position_code = self._get_position_code_from_employees(manager_userid)
         
         # If not found, try from positions cache using non_missing_manager_data
-        if not manager_position_code and self.non_missing_manager_data:
-            manager_position_code = self._get_position_code_from_positions(
-                self.non_missing_manager_data,
-                ec_user_id=manager_userid
-            )
+        if not manager_position_code:
+            manager_position_code = self._get_relation_position_from_context(manager_userid)
         
         # If we found the manager position code, use parentPosition
         if manager_position_code:
@@ -350,8 +368,6 @@ class PositionPayloadBuilder:
                     user_position_code = self._get_position_code_from_employees(
                         self.record["userid"]
                     )
-                if not user_position_code:
-                    user_position_code = self._get_position_code_from_positions(self.record)
 
             if not user_position_code:
                 Logger.error("Unable to determine User Position Code")
@@ -373,7 +389,7 @@ class PositionPayloadBuilder:
                 return None
             related_position_code = self._get_position_code_from_employees(relation_userid_)
             if not related_position_code:
-                related_position_code = self._get_position_code_from_positions(self.record, ec_user_id=relation_userid_)
+                related_position_code = self._get_relation_position_from_context(relation_userid_)
             if not related_position_code:
                 Logger.error("Unable to determine Related Position Code")
                 return None

@@ -91,7 +91,7 @@ class MigrationProcessor(CoreProcessor):
         ("UserRole", "userrole"),
         ("PerPersonal", "perpersonal"),
         ("PositionMatrixRelationships", "positionmatrixrelationships"),
-        ("PerEmail", "peremail"),
+        #("PerEmail", "peremail"),
         ("PerPhone", "perphone"),
         ("EmpJobRelationships", "empjobrelationships"),
     ]
@@ -99,7 +99,7 @@ class MigrationProcessor(CoreProcessor):
         "Position": [],
         "PerPerson": [],
         "PerPersonal": ["PerPerson"],
-        "PerEmail": ["PerPerson"],
+        #"PerEmail": ["PerPerson"],
         "PerPhone": ["PerPerson"],
         "PositionMatrixRelationships": ["Position", "PerPerson"],
         "EmpEmployment": ["Position", "PerPerson"],
@@ -153,7 +153,7 @@ class MigrationProcessor(CoreProcessor):
             "EmpJobRelationships": {},
             "PerPersonal": {},
             "UserRole": {},
-            "PerEmail": {},
+            #"PerEmail": {},
             "PerPhone": {},
         }
         self.postgres_cache = PostgresDataCache()
@@ -419,7 +419,7 @@ class MigrationProcessor(CoreProcessor):
             if not employment_builder:
                 ctx.fail("Employment builder not initialized")
                 return
-            self._handle_relationships(row, ctx, employment_builder)
+            self._handle_relationships(row, ctx, employment_builder, results=results)
         except Exception as e:
             ctx.fail(f"Error processing user {ctx.user_id}: {e}")
 
@@ -502,12 +502,8 @@ class MigrationProcessor(CoreProcessor):
 
             # Store both payloads
             ctx.payloads["empemployment"] = [employment_payload]
-            if ctx.has_existing_empjob:
-                # If has existing empjob for user, we separately store the two empjob payloads to be processed in order
-                ctx.payloads["empinitloadjob"] = [dummy_empjob_payload]
-                ctx.payloads["empjob"] = [actual_empjob_payload]
-            else:
-                ctx.payloads["empjob"] = [dummy_empjob_payload, actual_empjob_payload]
+            ctx.payloads["empinitloadjob"] = [dummy_empjob_payload]
+            ctx.payloads["empjob"] = [actual_empjob_payload]
 
             if actual_builder.calculated_start_date:
                 ctx.empjob_start_date = actual_builder.calculated_start_date
@@ -666,7 +662,7 @@ class MigrationProcessor(CoreProcessor):
         if not employment_builder:
             ctx.fail("Employment builder not initialized")
             return
-        self._handle_relationships(row, ctx, employment_builder)
+        self._handle_relationships(row, ctx, employment_builder, results=results)
 
     def _build_position_update(
         self,

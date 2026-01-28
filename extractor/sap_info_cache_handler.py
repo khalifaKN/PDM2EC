@@ -23,7 +23,7 @@ class SAPInfoCacheHandler:
         self.company_id = auth_credentials['company_id']
         self.max_retries = max_retries
         self.sap_cache = SAPDataCache()
-        self.entities = entites if entites else ['positions', 'employees', 'perPerson', 'perPersonal']
+        self.entities = entites if entites else ['positions', 'employees', 'perPerson', 'empJobRelationships']
 
     def _fetch_cache_sap_data(self, entity: str, api_client: APIClient) -> pd.DataFrame:
         """

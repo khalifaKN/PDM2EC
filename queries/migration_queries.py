@@ -166,5 +166,5 @@ migration_query="""
 
     -- Final WHERE clause applies exclusions and location filters
     WHERE MHP.PDM_UID NOT IN ('7033439', '7033429', '7033440') -- Excluded users
-      AND MHP.COUNTRY_CODE IN ('EG') -- Egypt location filter
+      AND MHP.COUNTRY_CODE IN ('CY')
         """

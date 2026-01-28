@@ -8,6 +8,7 @@ get_apis = {
     "perPerson": "/odata/v2/PerPerson",
     "perPersonal": "/odata/v2/PerPersonal",
     "perEmail": "/odata/v2/PerEmail",
+    "empJobRelationships": "/odata/v2/EmpJobRelationships"
 }
 
 uris_params = {
@@ -16,6 +17,7 @@ uris_params = {
     "perPerson": "$format=json&$select=dateOfBirth,placeOfBirth,countryOfBirth,birthName,personIdExternal",
     "perPersonal": "$format=json&$select=firstName,lastName,personIdExternal,middleName,gender,nationality,title,startDate,endDate",
     "perEmail": "$format=json&$select=emailAddress,emailType,personIdExternal,isPrimary",
+    "empJobRelationships": "$format=json&$select=relationshipType,userId,relUserId,startDate"
 }
 
 batch_apis = {

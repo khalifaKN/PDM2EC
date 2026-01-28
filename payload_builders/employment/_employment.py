@@ -106,38 +106,24 @@ class EmploymentPayloadBuilder:
         try:
             payload = get_emp_job()
             # Check if hire_date is after start_of_employment, the current format are "/Date(UnixTimestamp)/" like /Date(1768348800000)/
-            hire_date_ts = int(self.hire_date.strip("/Date()")) // 1000
-            start_of_employment_ts = int(self.start_of_employment.strip("/Date()")) // 1000
             manager_position_start_date_ts = None
             if self.manager_position_start_date:
                 manager_position_start_date_ts = int(self.manager_position_start_date.strip("/Date()")) // 1000
 
-            # Calculate base startDate from hire_date and start_of_employment
             # INITLOAD: use the oldest date (hire_date)
             # DATACHG: use the newest date (start_of_employment)
             if self.build_event_reason == "INITLOAD":
-                if hire_date_ts < start_of_employment_ts:
                     start_date_ = self.hire_date
-                else:
-                    Logger.warning(
-                        f"Hire date {self.hire_date} is after start of employment {self.start_of_employment} for user {self.user_id}. Using start of employment as start date."
-                    )
-                    start_date_ = self.start_of_employment
+
             else:
-                if start_of_employment_ts > hire_date_ts:
                     start_date_ = self.start_of_employment
-                else:
-                    Logger.warning(
-                        f"Start of employment {self.start_of_employment} is before hire date {self.hire_date} for user {self.user_id}. Using hire date as start date."
-                    )
-                    start_date_ = self.hire_date
                 
-                if manager_position_start_date_ts:
-                    if manager_position_start_date_ts > int(start_date_.strip("/Date()")) // 1000:
-                        Logger.warning(
-                            f"Manager position start date {self.manager_position_start_date} is after calculated start date {start_date_} for user {self.user_id}. Using manager position start date as start date."
-                        )
-                        start_date_ = convert_to_unix_timestamp(self.manager_position_start_date)
+            if manager_position_start_date_ts:
+                if manager_position_start_date_ts > int(start_date_.strip("/Date()")) // 1000:
+                    Logger.warning(
+                        f"Manager position start date {self.manager_position_start_date} is after calculated start date {start_date_} for user {self.user_id}. Using manager position start date as start date."
+                    )
+                    start_date_ = convert_to_unix_timestamp(self.manager_position_start_date)
 
             # If we have last EmpJob startDate (for existing employees), validate against backdating
             if self.start_date:
@@ -181,7 +167,7 @@ class EmploymentPayloadBuilder:
             Logger.error(f"Error building EmpJob payload for {self.user_id}: {e}")
             return None
 
-    def build_empjob_relationships_payload(self, rel_user_id: str, relationship_type: str = None, old_rel_user_id: str = None, start_date: str = None):
+    def build_empjob_relationships_payload(self,relationship_type: str = None, rel_user_id: str = None, old_rel_user_id: str = None, relationship_start_date: str = None):
         try:
             # Use passed relationship_type or fall back to self.relationship_type
             rel_type = relationship_type
@@ -193,9 +179,8 @@ class EmploymentPayloadBuilder:
                 
             payload = get_empjob_relationships_payload()
             # Use provided start_date or hire_date to match the hire record
-            relationship_start_date = self._normalize_relationship_start_date(start_date)
             old_rel_user_id_ = self._get_userid_from_personid(old_rel_user_id) if old_rel_user_id else None
-            if self.delimit:
+            if old_rel_user_id:
                 payload["relUserId"] = old_rel_user_id_ or self.old_rel_user_id
                 payload["operation"] = "DELIMIT"
             else:

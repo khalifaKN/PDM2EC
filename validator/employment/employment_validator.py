@@ -71,81 +71,21 @@ class EmploymentExistenceValidator:
             "location_code": None
         }
     
-    def get_position_code_from_positions(self,record) -> str | None:
+    def position_code_exists_in_employees(self) -> str:
         """
-        Returns the position code if it exists and is not assigned to another user.
+        Checks if the position code exists for the given user ID in the employment data.
+        Returns:
+            str: The position code if it exists, else an empty string.
         """
         try:
-
-            job_code = str(record.get('jobcode')).strip().lower()
-            location_code = str(record.get('address_code')).strip().lower()
-            cost_center = str(record.get('cost_center')).strip().lower()
-            company = str(record.get('company')).strip().lower()
-            if 'positioncriticality' in self.pos_data.columns:
-                self.pos_data['_is_critical'] = (
-                    pd.to_numeric(
-                        self.pos_data['positioncriticality'],
-                        errors='coerce'
-                    )
-                    .fillna(0)
-                    .astype(int)
-                    == 1
-                )
-            else:
-                self.pos_data['_is_critical'] = False
-
-            mask = (
-                (self.pos_data['jobcode'].astype(str).str.lower() == job_code) &
-                (self.pos_data['location'].astype(str).str.lower() == location_code) &
-                (self.pos_data['costcenter'].astype(str).str.lower() == cost_center) &
-                (self.pos_data['company'].astype(str).str.lower() == company) &
-                (~self.pos_data['_is_critical'] )  # Exclude critical positions which belong maybe to SCM
-            )
-
-            result = self.pos_data[mask]
-
+            mask = self.emp_data['userid'].astype(str).str.lower().eq(self.ec_user_id.lower())
+            result = self.emp_data[mask]
             if not result.empty:
-                for code in result['code']:
-                    emp_mask = self.emp_data['position'].astype(str).str.lower().eq(code.lower())
-                    emp_result = self.emp_data[emp_mask]
-
-                    if not emp_result.empty:
-                        assigned_userid = emp_result['userid'].values[0]
-                        if assigned_userid.lower() != self.ec_user_id.lower():
-                            logger.info(
-                                f"Position code {code} is already assigned to another user ID {assigned_userid}."
-                            )
-                            continue 
-                    # Check if position code is assigned to another user in current batch
-                    in_batch = False
-                    results_df = pd.DataFrame.from_dict(
-                        {
-                            user_id: ctx.position_code
-                            for user_id, ctx in self.results.items()
-                            if ctx.position_code
-                        },
-                        orient="index",
-                        columns=["position_code"]
-                    ).reset_index(names="user_id")
-                    results_df["user_id"] = results_df["user_id"].str.lower()
-                    results_df["position_code"] = results_df["position_code"].str.lower()
-                    code_l = code.lower()
-                    in_batch = (
-                        (results_df["position_code"] == code_l) &
-                        (results_df["user_id"] != self.user_id.lower())
-                    ).any()
-
-                    if in_batch:
-                        logger.info(
-                            f"Position code {code} is already assigned to another user in current processing batch."
-                        )
-                        continue
-                    logger.info(f"Position code {code} found for user ID {self.user_id} and not assigned to another user.")
-                    return code
-
+                position_code = result['position'].values[0]
+                logger.info(f"Position code {position_code} found for user ID {self.user_id}.")
+                return position_code
             logger.info(f"No position code found for user ID {self.user_id}.")
             return None
-
         except Exception as e:
             msg = f"Error checking position code existence for user ID {self.user_id}: {str(e)}"
             if self.raise_if_missing:

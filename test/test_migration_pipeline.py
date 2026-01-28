@@ -78,7 +78,7 @@ from datetime import datetime
 logger = get_logger('test_pipeline')
 
 # SAP entities to cache
-SAP_ENTITIES = ['positions', 'employees', 'perPerson', 'perPersonal','perEmail']
+SAP_ENTITIES = ['positions', 'employees', 'perPerson', 'empJobRelationships','perEmail']
 
 # Test configuration flags
 EXTRACT_DATABASE_DATA = True      # Step 1: Extract from PostgreSQL/Oracle
@@ -198,7 +198,7 @@ def save_sap_cache_debug_files(sap_cache):
     sap_cache.get('positions_df').to_csv(os.path.join(to_csv_dir, 'cached_positions_data.csv'), index=False)
     sap_cache.get('employees_df').to_csv(os.path.join(to_csv_dir, 'cached_employees_data.csv'), index=False)
     sap_cache.get('perperson_df').to_csv(os.path.join(to_csv_dir, 'cached_perperson_data.csv'), index=False)
-    sap_cache.get('perpersonal_df').to_csv(os.path.join(to_csv_dir, 'cached_perpersonal_data.csv'), index=False)
+    sap_cache.get('empjobrelationships_df').to_csv(os.path.join(to_csv_dir, 'cached_empjobrelationships_data.csv'), index=False)
     sap_cache.get('peremail_df').to_csv(os.path.join(to_csv_dir, 'cached_peremail_data.csv'), index=False)
     
     logger.info(f"✓ SAP cached data saved to {to_csv_dir}/\n")
@@ -757,7 +757,7 @@ if __name__ == "__main__":
         
         # Calculate total records for processing
         total_records = len(cached_pdm_data) if cached_pdm_data is not None else 0
-        run_id = history_loader.start_pipeline_run(total_records, start_time_)
+        run_id = history_loader.start_pipeline_run(total_records, start_time_,country='CYPRUS')
         logger.info(f"Pipeline run started with ID: {run_id}")
         
         # Clean any leftover failures from previous incomplete runs with same run_id

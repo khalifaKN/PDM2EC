@@ -24,6 +24,11 @@ The next will be overridden from CoreProcessor:
  - Class Methods:
     - _process_single_user : To handle the overall migration logic per user.
     - _build_update_payloads: To build the specific payloads for inactive employees if employee already exists in EC.
+The next will be added:
+ - Instance Methods:
+    - _handle_employment_termination: To build the EmpEmploymentTermination payload for inactive employees.
+ - Additional Attributes:
+    - exit_events: A mapping of exit reason IDs to termination event reasons required for building termination payloads.
 """
 
 from mapper.retrieve_person_id_external import get_userid_from_personid
@@ -43,7 +48,7 @@ from migration.migration_processing import MigrationProcessor
 
 import pandas as pd
 
-Logger = get_logger("migration_ inactive_emp_processing")
+Logger = get_logger("migration_inactive_emp_processing")
 
 
 class MigrationInactiveEmpProcessor(MigrationProcessor):
@@ -79,6 +84,7 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
         ordered_batches: list[pd.DataFrame],
         batches_summary: dict,
         job_code: dict,
+        exit_events: dict,
         positions_cache_key: str = "positions_df",
         max_retries: int = 5,
     ):
@@ -122,6 +128,7 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
         self.employees_cache = EmployeesDataCache()
         self.positions_cache_key = positions_cache_key
         self.job_code = job_code
+        self.exit_events = exit_events
 
     def _handle_employment_termination(self, row: pd.Series, ctx: UserExecutionContext):
         """
@@ -228,5 +235,40 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
             self._handle_employment(row, ctx, results)
             if ctx.has_errors:
                 return
+            self
         except Exception as e:
             ctx.fail(f"Error processing user {ctx.user_id}: {e}")
+    def _build_update_payloads(
+        self, row: pd.Series, ctx: UserExecutionContext, results: dict
+    ):
+        """
+        Build update payloads for inactive employee during migration.
+        The payloads include:
+        - Historical Position (Dummy Position)
+        - PerPerson
+        - EmpEmployment
+        - EmpJob (InitLoad only)
+        - PerPersonal
+        - Termination
+        """
+        try:
+            user_id = ctx.user_id
+            Logger.info(f"Building update payloads for inactive user {user_id}")
+            # POSITION (Historical Dummy Position)
+            self._handle_position(row, ctx, results)
+            if ctx.has_errors:
+                return
+            # PERSON
+            self._handle_person(row, ctx)
+            if ctx.has_errors:
+                return
+            # EMPLOYMENT
+            self._handle_employment(row, ctx, results, is_update=True)
+            if ctx.has_errors:
+                return
+            # EMPLOYMENT TERMINATION
+            self._handle_employment_termination(row, ctx)
+            if ctx.has_errors:
+                return
+        except Exception as e:
+            ctx.fail(f"Error building update payloads for user {ctx.user_id}: {e}")
