@@ -329,6 +329,9 @@ class MigrationProcessor(CoreProcessor):
 
             # CREATE OR GET DUMMY POSITION AND ASSIGN TO USER CONTEXT TO BE USED IN EMPLOYMENT PROCESSING
 
+            needs_hr_retry = bool(row.get("needs_hr_retry", False))
+            Logger.info(f"Processing user {user_id}, needs_hr_retry={needs_hr_retry}")
+            ctx.runtime["needs_hr_retry"] = needs_hr_retry
 
             self._create_or_get_dummy_position(ctx)
             if not ctx.dummy_position:
@@ -369,6 +372,11 @@ class MigrationProcessor(CoreProcessor):
                 return
 
             # POSITION MATRIX RELATIONSHIPS
+            if ctx.runtime.get("needs_hr_retry", False):
+                Logger.info(
+                    f"HR retry needed for user {user_id}, skipping PositionMatrixRelationships & Relationships for now"
+                )
+                return  # Skip if HR retry is needed
             position_builder = ctx.builders.get("position")
             if position_builder:
                 self._handle_position_matrix_relationship(row, ctx, position_builder)

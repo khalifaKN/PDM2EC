@@ -188,6 +188,10 @@ class CoreOfflineProcessor(CoreProcessor):
             if pd.isna(user_id) or not str(user_id).strip():
                 ctx.fail("Missing or null userid")
                 return
+            
+            needs_hr_retry = bool(row.get("needs_hr_retry", False))
+            Logger.info(f"Processing user {user_id}, needs_hr_retry={needs_hr_retry}")
+            ctx.runtime["needs_hr_retry"] = needs_hr_retry
 
             # Store original row for potential retry after Position cache refresh
             ctx.runtime["original_row"] = row
@@ -214,6 +218,11 @@ class CoreOfflineProcessor(CoreProcessor):
             if ctx.has_errors:
                 ctx.warn("Errors encountered during UserRole handling")
             # 5 POSITION MATRIX RELATIONSHIPS
+            if ctx.runtime.get("needs_hr_retry", False):
+                Logger.info(
+                    f"HR retry needed for user {user_id}, skipping PositionMatrixRelationships & Relationships for now"
+                )
+                return  # Skip if HR retry is needed
             position_builder = ctx.builders.get("position")
             if position_builder:
                 self._handle_position_matrix_relationship(row, ctx, position_builder)
@@ -492,7 +501,7 @@ class CoreOfflineProcessor(CoreProcessor):
         except Exception as e:
             ctx.fail(f"Error building position update for user {ctx.user_id}: {e}")
     
-    def _execute_batch_upserts(self, results, batch_user_ids):
+    def _execute_batch_upserts(self, results, batch_user_ids, is_retry=False):
         """
         Execute batched upserts per entity (SAP-compliant).
         Refresh caches for Position and EmpJob after upserts.
@@ -500,6 +509,9 @@ class CoreOfflineProcessor(CoreProcessor):
             results (Dict[str, UserExecutionContext]): Mapping of user_id to their execution context.
         """
         try:
+            if is_retry:
+                self._execute_hr_retry_upserts(results, batch_user_ids)
+                return
             for entity_name, _ in self.EXECUTION_PLAN:
                 payloads_per_user = self.collected_payloads.get(entity_name)
                 Logger.info(
@@ -584,3 +596,12 @@ class CoreOfflineProcessor(CoreProcessor):
         except Exception as e:
             Logger.error(f"Fatal error during batch upserts: {e}")
             raise
+    def _execute_hr_retry_upserts(self, results, batch_user_ids):
+        """
+        Execute retry upserts for users needing HR relationship fixes.
+        Only processes PositionMatrixRelationships and EmpJobRelationships.
+        """
+        Logger.info("Executing HR retry upserts...")
+
+        # First retry HR users relationship building
+        self._retry_hr_users(results, batch_user_ids)

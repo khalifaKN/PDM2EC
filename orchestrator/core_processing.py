@@ -22,7 +22,6 @@ from payload_builders.user._user import build_user_role_payload
 import pandas as pd
 
 
-
 Logger = get_logger("core_processor")
 
 
@@ -168,11 +167,14 @@ class CoreProcessor:
         self.sap_cache = SAPDataCache()
         self.employees_cache = EmployeesDataCache()
         self.hr_global_users = set(
-            self.oracle_cache.get('pdm_data_df')[
-                self.oracle_cache.get('pdm_data_df')['division'].str.lower() == 'human resources'
-            ]['userid'].astype(str).str.lower()
+            self.oracle_cache.get("pdm_data_df")[
+                self.oracle_cache.get("pdm_data_df")["division"].str.lower()
+                == "human resources"
+            ]["userid"]
+            .astype(str)
+            .str.lower()
         )
-        self.sap_email_data = self.sap_cache.get('peremail_df')
+        self.sap_email_data = self.sap_cache.get("peremail_df")
 
     def process_batches_new_employees(self):
         """
@@ -226,6 +228,18 @@ class CoreProcessor:
 
                 # Reset collected payloads for next batch
                 self._reset_collected_payloads()
+
+            # Retry logic for users needing HR
+            users_needing_hr_retry = {
+                user_id: ctx
+                for user_id, ctx in results.items()
+                if ctx.runtime.get("needs_hr_retry", False)
+            }
+            self._execute_batch_upserts(
+                results=users_needing_hr_retry,
+                batch_user_ids=set(users_needing_hr_retry.keys()),
+                is_retry=True,
+            )
 
             return results
         except Exception as e:
@@ -378,6 +392,9 @@ class CoreProcessor:
         """
         try:
             user_id = ctx.user_id
+            needs_hr_retry = bool(row.get("needs_hr_retry", False))
+            Logger.info(f"Processing user {user_id}, needs_hr_retry={needs_hr_retry}")
+            ctx.runtime["needs_hr_retry"] = needs_hr_retry
 
             if pd.isna(user_id) or not str(user_id).strip():
                 ctx.fail("Missing or null userid")
@@ -412,6 +429,11 @@ class CoreProcessor:
                 ctx.warn("Errors encountered during UserRole handling")
             # 5 POSITION MATRIX RELATIONSHIPS
             position_builder = ctx.builders.get("position")
+            if ctx.runtime.get("needs_hr_retry", False):
+                Logger.info(
+                    f"HR retry needed for user {user_id}, skipping PositionMatrixRelationships & Relationships for now"
+                )
+                return  # Skip if HR retry is needed
             if position_builder:
                 self._handle_position_matrix_relationship(row, ctx, position_builder)
                 if ctx.has_errors:
@@ -427,8 +449,10 @@ class CoreProcessor:
                     f"No Position builder for user {user_id} (position already exists), skipping PositionMatrixRelationships"
                 )
 
-            # Skip relationships if waiting for position_code
-            if ctx.runtime.get("needs_position_lookup"):
+            # Skip relationships if waiting for position_code or if HR retry is needed
+            if ctx.runtime.get("needs_position_lookup") or ctx.runtime.get(
+                "needs_hr_retry", False
+            ):
                 return
 
             # 6 RELATIONSHIPS
@@ -520,7 +544,6 @@ class CoreProcessor:
                 )
                 # Don't return - continue processing employment and relationships
             else:
-
                 payload = position_builder.build_position()
                 if not payload:
                     # include builder diagnostic if available
@@ -555,7 +578,12 @@ class CoreProcessor:
             user_id = ctx.user_id
 
             email_resolver = EmailResolver()
-            resolved = email_resolver.resolve_user_email(userid=user_id, pdm_row=row, hr_global_users=self.hr_global_users, sap_email_data=self.sap_email_data)
+            resolved = email_resolver.resolve_user_email(
+                userid=user_id,
+                pdm_row=row,
+                hr_global_users=self.hr_global_users,
+                sap_email_data=self.sap_email_data,
+            )
             safe_row = row.copy()
             safe_row["email"] = resolved["business_email"]
             safe_row["private_email"] = resolved["private_email"]
@@ -611,9 +639,7 @@ class CoreProcessor:
 
             Logger.info(f"Building person payloads for user {user_id}")
 
-            
             employment_start_date = row.get("date_of_position")
-            
 
             person_builder = PersonPayloadBuilder(
                 first_name=row["firstname"],
@@ -655,37 +681,53 @@ class CoreProcessor:
 
             business_email = row.get("email")
             private_email = row.get("private_email")
-            
+
             # Business email is mandatory
-            if business_email is None or pd.isna(business_email) or str(business_email).strip() == "":
-                ctx.warn(f"Email is missing for user {user_id}, skipping PerEmail payload")
+            if (
+                business_email is None
+                or pd.isna(business_email)
+                or str(business_email).strip() == ""
+            ):
+                ctx.warn(
+                    f"Email is missing for user {user_id}, skipping PerEmail payload"
+                )
                 return
-            
+
             business_email_norm = str(business_email).strip().lower()
-            
+
             # Always store peremail as a list (consistent)
             peremail_payloads = []
-            
+
             # ---- Build business email payload
-            business_payload = person_builder.build_peremail_payload(is_business_email=True)
+            business_payload = person_builder.build_peremail_payload(
+                is_business_email=True
+            )
             if not business_payload:
                 err = getattr(person_builder, "last_error", None)
                 extra = f" Builder error: {err}" if err else ""
-                ctx.fail(f"Failed to build PerEmail (business) payload for user {user_id}.{extra}")
+                ctx.fail(
+                    f"Failed to build PerEmail (business) payload for user {user_id}.{extra}"
+                )
                 return
-            
+
             peremail_payloads.append(business_payload)
-            
+
             # ---- Private email payload (optional)
-            if private_email is None or pd.isna(private_email) or str(private_email).strip() == "":
+            if (
+                private_email is None
+                or pd.isna(private_email)
+                or str(private_email).strip() == ""
+            ):
                 pass
             else:
                 private_email_norm = str(private_email).strip().lower()
-            
+
                 # Only create private email if different from business
                 if private_email_norm != business_email_norm:
-                    private_payload = person_builder.build_peremail_payload(is_business_email=False)
-            
+                    private_payload = person_builder.build_peremail_payload(
+                        is_business_email=False
+                    )
+
                     if not private_payload:
                         err = getattr(person_builder, "last_error", None)
                         extra = f" Builder error: {err}" if err else ""
@@ -694,7 +736,7 @@ class CoreProcessor:
                         )
                     else:
                         peremail_payloads.append(private_payload)
-            
+
             # Save only if we have at least 1 payload
             ctx.payloads["peremail"] = peremail_payloads
             # PerPhone payload
@@ -821,10 +863,12 @@ class CoreProcessor:
                         ctx.runtime["needs_position_lookup"] = True
                         return
                 else:
-                    position= ctx.position_code
+                    position = ctx.position_code
                     if not position:
                         # User has no position and we didn't create one - this is an error
-                        position = employment_validator.position_code_exists_in_employees()
+                        position = (
+                            employment_validator.position_code_exists_in_employees()
+                        )
                         if not position:
                             ctx.fail(
                                 f"Cannot determine position code for employment creation for user {user_id}"
@@ -1101,7 +1145,7 @@ class CoreProcessor:
         try:
             user_id = ctx.ec_user_id
             if not user_id:
-                user_id=get_userid_from_personid(person_id=user_id)
+                user_id = get_userid_from_personid(person_id=user_id)
             pdm_role = (
                 row.get("custom_string_8", "").strip()
                 if pd.notna(row.get("custom_string_8"))
@@ -1184,319 +1228,469 @@ class CoreProcessor:
 
             self.collected_payloads[entity_name][ctx.user_id] = payload
 
-    def _execute_batch_upserts(self, results, batch_user_ids):
+    def _execute_batch_upserts(self, results, batch_user_ids, is_retry=False):
         """
         Execute batched upserts per entity (SAP-compliant).
         Refresh caches for Position and EmpJob after upserts.
         Args:
             results (Dict[str, UserExecutionContext]): Mapping of user_id to their execution context.
+            batch_user_ids (set): Set of user IDs in the current batch.
+            is_retry (bool): Whether this is a retry operation for HR users.
         """
         try:
+            if is_retry:
+                self._execute_hr_retry_upserts(results, batch_user_ids)
+                return
+
             for entity_name, _ in self.EXECUTION_PLAN:
                 payloads_per_user = self.collected_payloads.get(entity_name)
                 Logger.info(
                     f"Processing upsert for entity: {entity_name} with {len(payloads_per_user) if payloads_per_user else 0} users"
                 )
+
                 if not payloads_per_user:
                     continue
 
-                eligible_payloads = {}
-
-                for user_id, payload in payloads_per_user.items():
-                    ctx = results[user_id]
-                    # Skip users with errors (only for new employee creation)
-                    if not ctx.is_update and ctx.has_errors:
-                        Logger.info(
-                            f"{entity_name} skipped for {user_id}: has_errors=True, errors={ctx.errors}"
-                        )
-                        ctx.runtime["entity_status"][entity_name] = "SKIPPED"
-                        continue
-
-                    # For updates, skip dependency checks since entities already exist in SAP
-                    # Only enforce dependencies for new employee creation
-                    if not ctx.is_update and not self._can_execute_entity(
-                        ctx, entity_name
-                    ):
-                        ctx.runtime["entity_status"][entity_name] = "SKIPPED"
-                        continue
-
-                    eligible_payloads[user_id] = payload
+                # Filter eligible users for this entity
+                eligible_payloads = self._filter_eligible_payloads(
+                    entity_name, payloads_per_user, results
+                )
 
                 if not eligible_payloads:
                     Logger.info(f"No eligible users for {entity_name}")
                     continue
 
+                # Execute upserts with entity-specific handling
                 Logger.info(
                     f"Upserting {entity_name} for {len(eligible_payloads)} users"
                 )
-                # Special handling for PerEmail: SAP requires operations in strict order
+
                 if entity_name == "PerEmail":
-                    # eligible_payloads: { user_id: [payloads] }
-                    # Flatten per action type to maintain order: DEMOTE -> DELETE -> UPDATE_TYPE -> PROMOTE -> INSERT
-                    action_order = [
-                        "DEMOTE",
-                        "DELETE",
-                        "UPDATE_TYPE",
-                        "PROMOTE",
-                        "INSERT",
-                    ]
-                    # Build mapping of action -> list of payloads and mapping payload index -> user
-                    all_responses = {}
-                    for action in action_order:
-                        chunk_payloads = []
-                        chunk_user_index = []
-                        for user_id, payloads in eligible_payloads.items():
-                            items = (
-                                payloads if isinstance(payloads, list) else [payloads]
-                            )
-                            for p in items:
-                                p_action = p.get("_email_action")
-                                # Treat untagged payloads (built for new employees) as INSERTs
-                                is_untagged = p_action is None
-                                if p_action == action or (
-                                    is_untagged and action == "INSERT"
-                                ):
-                                    # make a shallow copy and remove internal marker before sending
-                                    send_p = {
-                                        k: v
-                                        for k, v in p.items()
-                                        if k != "_email_action"
-                                    }
-                                    chunk_payloads.append(send_p)
-                                    chunk_user_index.append(user_id)
-                        if not chunk_payloads:
-                            continue
-                        # Call upsert client for this action chunk
-                        responses = self.upsert_client.upsert_entity_for_users(
-                            entity_name=entity_name,
-                            user_payloads={
-                                uid: [p]
-                                for uid, p in zip(chunk_user_index, chunk_payloads)
-                            },
-                        )
-                        # Merge responses: responses maps user_id to last result for that user's payload in this chunk
-                        for uid, res in responses.items():
-                            # If user already has a response for PerEmail, keep earlier FAILURE if present, else overwrite
-                            existing = all_responses.get(uid)
-                            if existing and existing.get("status") == "FAILED":
-                                # preserve failure
-                                continue
-                            all_responses[uid] = res
-                    # After ordered actions, map results back to contexts
-                    for user_id, result in all_responses.items():
-                        ctx = results[user_id]
-                        ctx.runtime[entity_name] = result
-                        if result["status"] == "FAILED":
-                            ctx.runtime["entity_status"][entity_name] = "FAILED"
-                            error_details = f"{entity_name} failed - Message: {result.get('message')}"
-                            if result.get("httpCode"):
-                                error_details += (
-                                    f", HTTP Code: {result.get('httpCode')}"
-                                )
-                            if result.get("key"):
-                                error_details += f", Key: {result.get('key')}"
-                            Logger.error(error_details)
-                            ctx.fail(error_details)
-                        else:
-                            ctx.runtime["entity_status"][entity_name] = "SUCCESS"
+                    self._execute_email_upserts(entity_name, eligible_payloads, results)
                 else:
-                    responses = self.upsert_client.upsert_entity_for_users(
-                        entity_name=entity_name, user_payloads=eligible_payloads
+                    self._execute_standard_upserts(
+                        entity_name, eligible_payloads, results
                     )
-                    for user_id, result in responses.items():
-                        ctx = results[user_id]
-                        ctx.runtime[entity_name] = result
-                        if result["status"] == "FAILED":
-                            ctx.runtime["entity_status"][entity_name] = "FAILED"
 
-                            # Build detailed error message with API response
-                            error_details = f"{entity_name} failed - Message: {result.get('message')}"
-                            if result.get("httpCode"):
-                                error_details += (
-                                    f", HTTP Code: {result.get('httpCode')}"
-                                )
-                            if result.get("key"):
-                                error_details += f", Key: {result.get('key')}"
-
-                            # PositionMatrixRelationships are optional - don't fail the entire process
-                            if entity_name == "PositionMatrixRelationships":
-                                Logger.warning(f"{error_details} - continuing anyway")
-                                ctx.warn(error_details)
-                            # EmpJobRelationships are optional - don't fail the entire process
-                            elif entity_name == "EmpJobRelationships":
-                                Logger.warning(f"{error_details} - continuing anyway")
-                                ctx.warn(error_details)
-                            else:
-                                ctx.fail(error_details)
-                        else:
-                            ctx.runtime["entity_status"][entity_name] = "SUCCESS"
-
-                            # Store position_code from response for employment processing
-                            # Key format: "Position/code=1020001,Position/effectiveStartDate=2026-01-14T00:00:00.000Z"
-                            if entity_name == "Position" and result.get("key"):
-                                key = result.get("key")
-                                # Extract position code from compound key
-                                if "code=" in key:
-                                    position_code = key.split("code=")[1].split(",")[0]
-                                    ctx.position_code = position_code
-                                else:
-                                    Logger.warning(
-                                        f"Could not parse position code from key: {key}"
-                                    )
-
-                # Retry employment/relationships for users who needed position_code
+                # Post-processing after specific entities
                 if entity_name == "Position":
-                    Logger.info(
-                        "Retrying employment & position matrix for users who need position_code"
-                    )
+                    self._retry_position_dependent_entities(results, batch_user_ids)
 
-                    for user_id, ctx in results.items():
-                        if (
-                            user_id in batch_user_ids
-                            and ctx.runtime.get("needs_position_lookup")
-                            and not ctx.has_errors
-                            and ctx.position_code
-                        ):
-                            row = ctx.runtime.get("original_row")
-                            if row is None:
-                                Logger.warning(
-                                    f"No original_row found for user {user_id} during retry"
-                                )
-                                continue
-
-                            # Retry position matrix relationships
-                            position_builder = ctx.builders.get("position")
-                            if position_builder:
-                                self._handle_position_matrix_relationship(
-                                    row, ctx, position_builder
-                                )
-
-                            # Retry employment
-                            if self._can_execute_entity(ctx, "EmpEmployment"):
-                                self._handle_employment(row, ctx, results)
-
-                                # Retry EmpJobRelationships if employment rebuilt successfully
-                                if not ctx.has_errors and self._can_execute_entity(
-                                    ctx, "EmpJobRelationships"
-                                ):
-                                    self._handle_relationships(
-                                        row, ctx, ctx.builders.get("employment"), results=results
-                                    )
-
-                                # Collect payloads again if retry successful
-                                if not ctx.has_errors:
-                                    self._collect_payloads(ctx)
-                            else:
-                                continue
-
-                # Sync Position to Job after EmpJob success (triggers SAP PositionToJobInfoSyncRule)
                 if entity_name == "EmpJob":
-                    Logger.info("=" * 120)
-                    Logger.info(
-                        "POSITION-TO-JOB SYNC OPERATION (Not a Position creation/update)"
-                    )
-                    Logger.info("=" * 120)
+                    self._execute_position_sync(results, batch_user_ids)
 
-                    position_sync_payloads = {}
-                    for user_id, ctx in results.items():
-                        if (
-                            user_id in batch_user_ids
-                            and ctx.runtime.get("entity_status", {}).get("EmpJob")
-                            == "SUCCESS"
-                            and not ctx.has_errors
-                            and ctx.position_code
-                            and ctx.empjob_start_date
-                        ):
-                            row = ctx.runtime.get("original_row")
-                            position_builder = ctx.builders.get("position")
-
-                            if position_builder is None:
-                                if row is None:
-                                    Logger.warning(
-                                        f"No original_row  and position_builder found for user {user_id} during Position sync"
-                                    )
-                                    continue
-                                job_validator = JobExistenceValidator(
-                                    job_mappings=self.postgres_cache.get(
-                                        "jobs_titles_data_df"
-                                    ),
-                                    job_code=row["jobcode"],
-                                )
-
-                                job_mapping = job_validator.get_job_mapping()
-                                if job_mapping.empty:
-                                    Logger.warning(
-                                        f"Job code {row['jobcode']} does not exist for user {user_id} during Position sync"
-                                    )
-                                    ctx.fail(
-                                        f"Job code {row['jobcode']} does not exist for user {user_id} during Position sync"
-                                    )
-                                    continue
-                                position_builder = PositionPayloadBuilder(
-                                    record=row,
-                                    job_mappings=job_mapping,
-                                    results=results,
-                                    ec_user_id=ctx.ec_user_id,
-                                )
-
-                            # Build Position payload with sync_pos_to_emp=True
-                            sync_payload = position_builder.build_position(
-                                sync_pos_to_emp=True,
-                                effective_start_date_=ctx.empjob_start_date,
-                                position_code_=ctx.position_code,
-                            )
-
-                            if sync_payload:
-                                # Store in ctx.payloads for history tracking (payload_snapshot)
-                                ctx.payloads["position_sync"] = sync_payload
-                                position_sync_payloads[user_id] = [sync_payload]
-                            else:
-                                Logger.warning(
-                                    f"[POSITION SYNC] Failed to build sync payload for user {user_id}"
-                                )
-
-                    # Batch upsert Position sync payloads
-                    if position_sync_payloads:
-                        Logger.info(
-                            f"[POSITION SYNC] Upserting {len(position_sync_payloads)} sync operations to trigger PositionToJobInfoSyncRule"
-                        )
-
-                        # API requires entity_name="Position" but we track separately
-                        sync_responses = self.upsert_client.upsert_entity_for_users(
-                            entity_name="Position", user_payloads=position_sync_payloads
-                        )
-
-                        for user_id, result in sync_responses.items():
-                            # Store sync result separately (not in entity_status) to avoid confusion with Position creation/updates
-                            results[user_id].runtime["Position_SYNC"] = result
-
-                            if result["status"] == "FAILED":
-                                Logger.warning(
-                                    f"[POSITION SYNC] Sync failed for user {user_id}: {result.get('message')}"
-                                )
-                                # Don't fail the entire process - this is just a sync operation
-                                results[user_id].warn(
-                                    f"Position-to-Job sync failed: {result.get('message')}"
-                                )
-                            else:
-                                continue
-
-                    Logger.info("=" * 80)
-
-                # Mark any remaining PENDING users as SKIPPED
-                for user_id, ctx in results.items():
-                    if (
-                        ctx.runtime.get("entity_status", {}).get(entity_name)
-                        == "PENDING"
-                    ):
-                        ctx.runtime["entity_status"][entity_name] = "SKIPPED"
-
-            # Log summary grouped by user
-            self._log_batch_summary_by_user(results)
+                # Mark remaining PENDING users as SKIPPED
+                self._mark_pending_as_skipped(results, entity_name)
 
         except Exception as e:
             Logger.error(f"Fatal error during batch upserts: {e}")
             raise
+
+    def _execute_hr_retry_upserts(self, results, batch_user_ids):
+        """
+        Execute retry upserts for users needing HR relationship fixes.
+        Only processes PositionMatrixRelationships and EmpJobRelationships.
+        """
+        Logger.info("Executing HR retry upserts...")
+
+        # First retry HR users relationship building
+        self._retry_hr_users(results, batch_user_ids)
+
+        # Then execute upserts for relationship entities
+        for entity in ["PositionMatrixRelationships", "EmpJobRelationships"]:
+            payloads_per_user = self.collected_payloads.get(entity)
+
+            # Keep only users to be retried
+            payloads_per_user = {
+                uid: payload
+                for uid, payload in (payloads_per_user or {}).items()
+                if uid in batch_user_ids
+            }
+
+            eligible_payloads = self._filter_eligible_payloads(
+                entity, payloads_per_user, results
+            )
+
+            if not eligible_payloads:
+                Logger.info(f"No eligible users for {entity} in retry")
+                continue
+
+            responses = self.upsert_client.upsert_entity_for_users(
+                entity_name=entity, user_payloads=eligible_payloads
+            )
+
+            self._process_upsert_responses(
+                entity, responses, results, is_warning_only=True
+            )
+
+    def _filter_eligible_payloads(self, entity_name, payloads_per_user, results):
+        """
+        Filter payloads to only include eligible users for the given entity.
+
+        Args:
+            entity_name: Name of the entity being processed
+            payloads_per_user: Dict mapping user_id to their payloads
+            results: Dict of UserExecutionContext objects
+
+        Returns:
+            Dict of eligible payloads ready for upsert
+        """
+        eligible_payloads = {}
+
+        for user_id, payload in payloads_per_user.items():
+            ctx = results[user_id]
+
+            # Skip users with errors (only for new employee creation)
+            if not ctx.is_update and ctx.has_errors:
+                Logger.info(
+                    f"{entity_name} skipped for {user_id}: has_errors=True, errors={ctx.errors}"
+                )
+                ctx.runtime["entity_status"][entity_name] = "SKIPPED"
+                continue
+
+            # For updates, skip dependency checks since entities already exist in SAP
+            # Only enforce dependencies for new employee creation
+            if not ctx.is_update and not self._can_execute_entity(ctx, entity_name):
+                ctx.runtime["entity_status"][entity_name] = "SKIPPED"
+                continue
+
+            eligible_payloads[user_id] = payload
+        return eligible_payloads
+
+    def _execute_email_upserts(self, entity_name, eligible_payloads, results):
+        """
+        Execute email upserts with strict ordering required by SAP:
+        DEMOTE -> DELETE -> UPDATE_TYPE -> PROMOTE -> INSERT
+        """
+        action_order = ["DEMOTE", "DELETE", "UPDATE_TYPE", "PROMOTE", "INSERT"]
+        all_responses = {}
+
+        for action in action_order:
+            chunk_payloads = []
+            chunk_user_index = []
+
+            for user_id, payloads in eligible_payloads.items():
+                items = payloads if isinstance(payloads, list) else [payloads]
+
+                for p in items:
+                    p_action = p.get("_email_action")
+                    # Treat untagged payloads (built for new employees) as INSERTs
+                    is_untagged = p_action is None
+
+                    if p_action == action or (is_untagged and action == "INSERT"):
+                        # Make a shallow copy and remove internal marker before sending
+                        send_p = {k: v for k, v in p.items() if k != "_email_action"}
+                        chunk_payloads.append(send_p)
+                        chunk_user_index.append(user_id)
+
+            if not chunk_payloads:
+                continue
+
+            # Call upsert client for this action chunk
+            responses = self.upsert_client.upsert_entity_for_users(
+                entity_name=entity_name,
+                user_payloads={
+                    uid: [p] for uid, p in zip(chunk_user_index, chunk_payloads)
+                },
+            )
+
+            # Merge responses: keep earlier FAILURE if present
+            for uid, res in responses.items():
+                existing = all_responses.get(uid)
+                if existing and existing.get("status") == "FAILED":
+                    continue  # Preserve failure
+                all_responses[uid] = res
+        # Process all collected responses
+        self._process_upsert_responses(entity_name, all_responses, results)
+
+    def _execute_standard_upserts(self, entity_name, eligible_payloads, results):
+        """
+        Execute standard upserts for non-email entities.
+        """
+        responses = self.upsert_client.upsert_entity_for_users(
+            entity_name=entity_name, user_payloads=eligible_payloads
+        )
+
+        # Determine if entity failures should be warnings only
+        is_warning_only = entity_name in [
+            "PositionMatrixRelationships",
+            "EmpJobRelationships",
+        ]
+
+        self._process_upsert_responses(entity_name, responses, results, is_warning_only)
+
+    def _process_upsert_responses(
+        self, entity_name, responses, results, is_warning_only=False
+    ):
+        """
+        Process upsert responses and update user contexts.
+
+        Args:
+            entity_name: Name of the entity
+            responses: Dict mapping user_id to API response
+            results: Dict of UserExecutionContext objects
+            is_warning_only: If True, failures are treated as warnings instead of errors
+        """
+        for user_id, result in responses.items():
+            ctx = results[user_id]
+            ctx.runtime[entity_name] = result
+
+            if result["status"] == "FAILED":
+                ctx.runtime["entity_status"][entity_name] = "FAILED"
+
+                # Build detailed error message with API response
+                error_details = (
+                    f"{entity_name} failed - Message: {result.get('message')}"
+                )
+                if result.get("httpCode"):
+                    error_details += f", HTTP Code: {result.get('httpCode')}"
+                if result.get("key"):
+                    error_details += f", Key: {result.get('key')}"
+
+                if is_warning_only:
+                    Logger.warning(f"{error_details} - continuing anyway")
+                    ctx.warn(error_details)
+                else:
+                    Logger.error(error_details)
+                    ctx.fail(error_details)
+            else:
+                ctx.runtime["entity_status"][entity_name] = "SUCCESS"
+
+                # Store position_code from response for employment processing
+                if entity_name == "Position" and result.get("key"):
+                    key = result.get("key")
+                    # Extract position code from compound key
+                    # Key format: "Position/code=1020001,Position/effectiveStartDate=2026-01-14T00:00:00.000Z"
+                    if "code=" in key:
+                        position_code = key.split("code=")[1].split(",")[0]
+                        ctx.position_code = position_code
+                    else:
+                        Logger.warning(f"Could not parse position code from key: {key}")
+
+    def _retry_position_dependent_entities(self, results, batch_user_ids):
+        """
+        Retry employment and position matrix relationships for users who needed position_code.
+        Called after Position entity upserts are complete.
+        """
+        Logger.info(
+            "Retrying employment & position matrix for users who need position_code"
+        )
+
+        for user_id, ctx in results.items():
+            if (
+                user_id in batch_user_ids
+                and ctx.runtime.get("needs_position_lookup")
+                and not ctx.has_errors
+                and ctx.position_code
+            ):
+                row = ctx.runtime.get("original_row")
+                if row is None:
+                    Logger.warning(
+                        f"No original_row found for user {user_id} during retry"
+                    )
+                    continue
+
+                # Retry position matrix relationships
+                position_builder = ctx.builders.get("position")
+                if position_builder:
+                    self._handle_position_matrix_relationship(
+                        row, ctx, position_builder
+                    )
+
+                # Retry employment
+                if self._can_execute_entity(ctx, "EmpEmployment"):
+                    self._handle_employment(row, ctx, results)
+
+                    # Retry EmpJobRelationships if employment rebuilt successfully
+                    if not ctx.has_errors and self._can_execute_entity(
+                        ctx, "EmpJobRelationships"
+                    ):
+                        self._handle_relationships(
+                            row, ctx, ctx.builders.get("employment"), results=results
+                        )
+
+                    # Collect payloads again if retry successful
+                    if not ctx.has_errors:
+                        self._collect_payloads(ctx)
+                else:
+                    continue
+
+    def _execute_position_sync(self, results, batch_user_ids):
+        """
+        Sync Position to Job after EmpJob success (triggers SAP PositionToJobInfoSyncRule).
+        This is NOT a Position creation/update - it's a sync operation to propagate EmpJob changes.
+        """
+        Logger.info("=" * 120)
+        Logger.info("POSITION-TO-JOB SYNC OPERATION (Not a Position creation/update)")
+        Logger.info("=" * 120)
+
+        position_sync_payloads = {}
+
+        for user_id, ctx in results.items():
+            if not self._should_execute_position_sync(ctx, user_id, batch_user_ids):
+                continue
+
+            row = ctx.runtime.get("original_row")
+            position_builder = ctx.builders.get("position")
+
+            # Build or retrieve position builder
+            if position_builder is None:
+                position_builder = self._build_position_builder_for_sync(
+                    row, ctx, results, user_id
+                )
+                if position_builder is None:
+                    continue
+
+            # Build Position payload with sync_pos_to_emp=True
+            sync_payload = position_builder.build_position(
+                sync_pos_to_emp=True,
+                effective_start_date_=ctx.empjob_start_date,
+                position_code_=ctx.position_code,
+            )
+
+            if sync_payload:
+                # Store in ctx.payloads for history tracking (payload_snapshot)
+                ctx.payloads["position_sync"] = sync_payload
+                position_sync_payloads[user_id] = [sync_payload]
+            else:
+                Logger.warning(
+                    f"[POSITION SYNC] Failed to build sync payload for user {user_id}"
+                )
+
+        # Batch upsert Position sync payloads
+        if position_sync_payloads:
+            Logger.info(
+                f"[POSITION SYNC] Upserting {len(position_sync_payloads)} sync operations to trigger PositionToJobInfoSyncRule"
+            )
+
+            # API requires entity_name="Position" but we track separately
+            sync_responses = self.upsert_client.upsert_entity_for_users(
+                entity_name="Position", user_payloads=position_sync_payloads
+            )
+
+            for user_id, result in sync_responses.items():
+                # Store sync result separately (not in entity_status)
+                results[user_id].runtime["Position_SYNC"] = result
+
+                if result["status"] == "FAILED":
+                    Logger.warning(
+                        f"[POSITION SYNC] Sync failed for user {user_id}: {result.get('message')}"
+                    )
+                    # Don't fail the entire process - this is just a sync operation
+                    results[user_id].warn(
+                        f"Position-to-Job sync failed: {result.get('message')}"
+                    )
+                else:
+                    continue
+
+        Logger.info("=" * 80)
+
+    def _should_execute_position_sync(self, ctx, user_id, batch_user_ids):
+        """
+        Determine if position sync should be executed for a user.
+        """
+        return (
+            user_id in batch_user_ids
+            and ctx.runtime.get("entity_status", {}).get("EmpJob") == "SUCCESS"
+            and not ctx.has_errors
+            and ctx.position_code
+            and ctx.empjob_start_date
+        )
+
+    def _build_position_builder_for_sync(self, row, ctx, results, user_id):
+        """
+        Build a position builder for position sync operation.
+        """
+        if row is None:
+            Logger.warning(
+                f"No original_row and position_builder found for user {user_id} during Position sync"
+            )
+            return None
+
+        job_validator = JobExistenceValidator(
+            job_mappings=self.postgres_cache.get("jobs_titles_data_df"),
+            job_code=row["jobcode"],
+        )
+
+        job_mapping = job_validator.get_job_mapping()
+        if job_mapping.empty:
+            Logger.warning(
+                f"Job code {row['jobcode']} does not exist for user {user_id} during Position sync"
+            )
+            ctx.fail(
+                f"Job code {row['jobcode']} does not exist for user {user_id} during Position sync"
+            )
+            return None
+
+        return PositionPayloadBuilder(
+            record=row,
+            job_mappings=job_mapping,
+            results=results,
+            ec_user_id=ctx.ec_user_id,
+        )
+
+    def _mark_pending_as_skipped(self, results, entity_name):
+        """
+        Mark any remaining PENDING users as SKIPPED for the given entity.
+        """
+        for user_id, ctx in results.items():
+            if ctx.runtime.get("entity_status", {}).get(entity_name) == "PENDING":
+                ctx.runtime["entity_status"][entity_name] = "SKIPPED"
+
+    def _retry_hr_users(self, results: dict, batch_user_ids: set):
+        """
+        Retry processing for users who failed due to missing HR relationship.
+        This is a common issue since HR relationships are processed at the end and may be missing during employment processing.
+        """
+        Logger.info("Retrying users with missing HR relationship...")
+
+        for user_id, ctx in results.items():
+            if not self._should_retry_hr_user(ctx, user_id, batch_user_ids):
+                continue
+
+            row = ctx.runtime.get("original_row")
+            if row is None:
+                Logger.warning(
+                    f"No original_row found for user {user_id} during HR retry"
+                )
+                continue
+
+            # Retry relationships (which includes HR)
+            if ctx.builders.get("employment") is not None:
+                self._handle_relationships(
+                    row=row,
+                    ctx=ctx,
+                    employment_builder=ctx.builders.get("employment"),
+                    results=results,
+                )
+            else:
+                Logger.warning(
+                    f"No employment builder found for user {user_id} during HR retry"
+                )
+                ctx.warn(
+                    f"Cannot retry HR relationship for user {user_id} because employment builder is missing"
+                )
+            
+            if ctx.builders.get("position") is not None:
+                self._handle_position_matrix_relationship(
+                    row=row, ctx=ctx, position_builder=ctx.builders.get("position")
+                )
+            else:
+                ctx.warn(
+                    f"No position builder found for user {user_id} during HR retry - cannot retry position matrix relationship"
+                )
+
+            # If retry successful, collect payloads again for batch upsert
+            if not ctx.has_errors:
+                self._collect_payloads(ctx)
+
+    def _should_retry_hr_user(self, ctx, user_id, batch_user_ids):
+        """
+        Determine if a user should be retried for HR relationship issues.
+        """
+        return (
+            user_id in batch_user_ids
+        )
 
     def _log_batch_summary_by_user(self, results: dict):
         """
@@ -1722,7 +1916,7 @@ class CoreProcessor:
                         has_position = True
                     else:
                         Logger.warning(
-                            f"No existing position found in employees cache for user {user_id}" 
+                            f"No existing position found in employees cache for user {user_id}"
                         )
                 else:
                     Logger.warning(
@@ -1822,7 +2016,6 @@ class CoreProcessor:
             # Build PersonPayloadBuilder once for all person entities
             # Use start_of_employment (hire date) for PerPersonal, not date_of_position
             employment_start_date = row.get("date_of_position")
-
 
             person_builder = PersonPayloadBuilder(
                 first_name=row.get("firstname"),
@@ -1931,9 +2124,7 @@ class CoreProcessor:
                 elif action == "demote":
                     email_actions["primary"]["demote"] = (email, email_type)
                 else:
-                    ctx.warn(
-                        f"Unknown email action '{action}' for user {user_id}"
-                    )
+                    ctx.warn(f"Unknown email action '{action}' for user {user_id}")
 
             if not any(
                 [
@@ -1944,9 +2135,7 @@ class CoreProcessor:
                     email_actions["primary"]["demote"],
                 ]
             ):
-                ctx.warn(
-                    f"No valid email actions after transformation for {user_id}"
-                )
+                ctx.warn(f"No valid email actions after transformation for {user_id}")
                 return
 
             payloads = []
@@ -1969,7 +2158,6 @@ class CoreProcessor:
                     payload["_email_action"] = "DEMOTE"
                     payloads.append(payload)
 
-
             # DELETE existing emails
             for email, email_type in email_actions.get("delete", []):
                 payload = person_builder.build_peremail_payload_action(
@@ -1978,7 +2166,6 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "DELETE"
                     payloads.append(payload)
-
 
             # UPDATE email type
             for email, new_type in email_actions.get("update_type", []):
@@ -1989,7 +2176,6 @@ class CoreProcessor:
                     payload["_email_action"] = "UPDATE_TYPE"
                     payloads.append(payload)
 
-
             # PROMOTE - Set new primary email (if email doesn't exist, this also inserts it)
             if promote:
                 email, email_type = promote
@@ -1999,7 +2185,6 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "PROMOTE"
                     payloads.append(payload)
-
 
             # INSERT new emails (skip if email is being promoted - promote handles both insert + primary)
             for email, email_type in email_actions.get("insert", []):
@@ -2080,7 +2265,10 @@ class CoreProcessor:
                 employees_df = self.sap_cache.get("employees_df")
                 if employees_df is not None:
                     # Filter to retrieve match with user_id and jobcode different than the historical dummy jobcode T00001
-                    match = employees_df[(employees_df["userid"] == user_id) & (employees_df["jobcode"] != "T00001")]
+                    match = employees_df[
+                        (employees_df["userid"] == user_id)
+                        & (employees_df["jobcode"] != "T00001")
+                    ]
                     if not match.empty:
                         position_code = match["position"].values[0]
                         ctx.position_code = position_code  # Store for future use
@@ -2244,9 +2432,7 @@ class CoreProcessor:
                 if hr_payload:
                     payloads.append(hr_payload)
                 else:
-                    ctx.warn(
-                        f"Failed to build HR relationship for user {user_id}"
-                    )
+                    ctx.warn(f"Failed to build HR relationship for user {user_id}")
 
             if payloads:
                 ctx.payloads["positionmatrixrelationships"] = (

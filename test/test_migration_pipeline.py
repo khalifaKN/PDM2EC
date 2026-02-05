@@ -900,13 +900,6 @@ if __name__ == "__main__":
                 # Debug: log extracted history details before saving to DB
                 try:
                     logger.info(f"History to save - created_count={created_count}, updated_count={updated_count}, terminated_count={terminated_count}, failed_count={total_failed}, warning_count={total_warnings}")
-                    # If available, log the detailed history objects
-                    if 'new_emp_history' in locals():
-                        logger.info(f"new_emp_history: {new_emp_history}")
-                    if 'update_history' in locals():
-                        logger.info(f"update_history: {update_history}")
-                    if 'terminate_history' in locals():
-                        logger.info(f"terminate_history: {terminate_history}")
                 except Exception as dbg_e:
                     logger.warning(f"Failed to log history debug info: {dbg_e}")
 
