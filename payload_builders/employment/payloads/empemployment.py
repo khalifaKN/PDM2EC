@@ -12,7 +12,6 @@ def get_empemployment_payloads():
         "userId": "",
         "originalStartDate": "",
         "serviceDate": "",
-        "customString8": ""
     }
     """
 
@@ -26,5 +25,4 @@ def get_empemployment_payloads():
         "userId": "",
         "originalStartDate": "",
         "serviceDate": "",
-        "customString8": ""
     }

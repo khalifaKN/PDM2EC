@@ -64,7 +64,10 @@ class SAPInfoCacheHandler:
         # Obtain token and create API client
         token = auth_api.get_token()
         api_client = APIClient(base_url=self.base_url, token={'access_token': token},max_retries=self.max_retries)
-        # Test data extraction and caching for positions
+        
+        #Clear cache before fetching new data
+        self.sap_cache.reset_singleton()
+        
         if position_flag:
             self._fetch_cache_sap_data('positions', api_client)
         elif empjob_flag:

@@ -30,5 +30,5 @@ def get_emp_job():
         "eventReason": "",
         "seqNumber": "",
         "costCenter": "",
-        "managerId": ""
+        "managerId": "",
     }

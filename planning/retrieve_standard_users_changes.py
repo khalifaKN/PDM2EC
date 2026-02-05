@@ -13,7 +13,17 @@ class StandardUsersUpdatesRetriever(BaseUsersUpdatesRetriever):
     """
 
     def __init__(self, pdm_data, ec_data, standard_users_ids, postgres_connector, table_names, chunk_size=1000, sap_email_data=None, run_id=None, batch_context=None):
-        super().__init__(pdm_data, ec_data, standard_users_ids, postgres_connector, table_names, chunk_size, sap_email_data, run_id, batch_context)
+        super().__init__(
+            pdm_data=pdm_data,
+            ec_data=ec_data,
+            user_ids=standard_users_ids,
+            postgres_connector=postgres_connector,
+            table_names=table_names,
+            sap_email_data=sap_email_data,
+            chunk_size=chunk_size,
+            run_id=run_id,
+            batch_context=batch_context
+        )
         self.standard_users_ids = standard_users_ids
 
     def generate_changes(self):

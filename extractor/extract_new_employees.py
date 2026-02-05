@@ -30,6 +30,7 @@ class NewEmployeesExtractor:
             # Identify new employees
             new_employees_= self.pdm_users[~pdm_users_id.isin(sap_users_id)].copy()
             # Exclude any user not IM/SCM
+            excluded_count = 0
             if not self.is_migration:
                 new_employees = new_employees_[
                     (new_employees_['is_peoplehub_im_manually_included'] == 'Y') |
@@ -47,7 +48,7 @@ class NewEmployeesExtractor:
             employees_cache = EmployeesDataCache()
             employees_cache.set('new_employees_df', new_employees)
             logger.info(f"Extracted {len(new_employees)} new employees from PDM data.")
-            return new_employees, len(new_employees)
+            return new_employees, excluded_count
         except Exception as e:
             logger.error(f"Error extracting new employees: {e}")
             raise e

@@ -2,7 +2,6 @@
 Test Pipeline for PDM to EC Data Synchronization
 
 This pipeline demonstrates the complete flow:
-
 1. Extract data from PostgreSQL and Oracle databases
 2. Cache SAP SuccessFactors data
 3. Identify new and existing employees
@@ -14,7 +13,6 @@ Usage:
     python -m test.test_pipeline
 
 Troubleshooting:
-
     If the pipeline hangs during database extraction:
     1. Kill process: taskkill /F /IM python.exe
     2. Set EXTRACT_DATABASE_DATA = False to use cached data
@@ -49,22 +47,22 @@ from config.api_credentials import auth_credentials
 from config.sf_apis import base_url, auth_endpoint
 from config.exclusion_standards import EXLUSION_STANDARDS
 from config.tables_names import (
-    migration_field_changes_tables,
-    migration_pipeline_summary_tables
+    regular_pipeline_summary_tables,
+    regular_field_changes_tables
 )
-from migration.migration_processing import MigrationProcessor
+from queries.postgres_queries import (
+    extract_ec_records_query, 
+    extract_jobs_titles_records_query, 
+    extract_different_userid_personid_query
+    )
+from queries.oracle_queries import extract_pdm_records_query,extract_pdm_inactive_records_query
+from orchestrator.core_offline_processing import CoreOfflineProcessor
 from orchestrator.disable_ec_users_processing import DisableUsersProcessor
 from orchestrator.notification_processing import NotificationHandler
 from cache.postgres_cache import PostgresDataCache
 from cache.oracle_cache import OracleDataCache
 from cache.sap_cache import SAPDataCache
 from cache.employees_cache import EmployeesDataCache
-from queries.migration_queries import migration_query
-from queries.postgres_queries import (
-    extract_ec_records_query, 
-    extract_jobs_titles_records_query, 
-    extract_different_userid_personid_query
-    )
 from utils.logger import get_logger
 from db.psycopg2_connection import Psycopg2DatabaseConnection
 from loader.pipeline_history_loader import PipelineHistoryLoader
@@ -81,12 +79,12 @@ logger = get_logger('test_pipeline')
 SAP_ENTITIES = ['positions', 'employees', 'perPerson', 'empJobRelationships','perEmail']
 
 # Test configuration flags
-EXTRACT_DATABASE_DATA = True      # Step 1: Extract from PostgreSQL/Oracle
-EXTRACT_SAP_DATA = True           # Step 2: Extract from SAP
+EXTRACT_DATABASE_DATA = True     # Step 1: Extract from PostgreSQL/Oracle
+EXTRACT_SAP_DATA = True          # Step 2: Extract from SAP
 PROCESS_NEW_EMPLOYEES = True     # Step 7: Process new employee creation
 PROCESS_FIELD_UPDATES = True     # Step 8-9: Detect and process field updates
-PROCESS_INACTIVE_USERS = False    # Step 10: Process inactive users (terminate & disable)
-SAVE_DEBUG_OUTPUTS = True         # Save CSV files for debugging
+PROCESS_INACTIVE_USERS = True    # Step 10: Process inactive users (terminate & disable)
+SAVE_DEBUG_OUTPUTS = True        # Save CSV files for debugging
 PROCESS_NOTIFICATIONS = True     # Step 11: Send notification email
 
 # Database timeout settings (in seconds)
@@ -112,7 +110,7 @@ def extract_and_cache_database_data():
         cache_data_extractor = CacheDataExtractor(
             postgres_extractor, 
             oracle_extractor,
-            migration_query,
+            extract_pdm_records_query,
             extract_ec_records_query,
             extract_jobs_titles_records_query,
             extract_different_userid_personid_query
@@ -224,8 +222,7 @@ def extract_employee_classifications(cached_pdm_data, cached_ec_data):
     # Extract new employees
     new_employees_extractor = NewEmployeesExtractor(
         pdm_users=cached_pdm_data,
-        sap_users=cached_ec_data,
-        is_migration=True
+        sap_users=cached_ec_data
     )
     new_employees_df, new_employees_excluded_count = new_employees_extractor.extract_new_employees()
     
@@ -341,7 +338,7 @@ def save_creation_batches(batches):
 
 def process_new_employees(new_employees_df, batches, summary):
     """
-    Step 7: Process new employee creation through CoreProcessor.
+    Step 7: Process new employee creation through CoreOfflineProcessor.
     """
     if not PROCESS_NEW_EMPLOYEES or len(new_employees_df) == 0:
         logger.info("Skipping new employee processing (disabled or no new employees)")
@@ -351,21 +348,15 @@ def process_new_employees(new_employees_df, batches, summary):
     logger.info("STEP 7: Processing new employees creation")
     logger.info("=" * 80)
     
-    # TODO: Add dummy_position_values configuration for migration
-    # For now, using empty dict - update based on your migration requirements
-    job_code = 'T00001'
-    
-    migration_processor = MigrationProcessor(
+    core_processor = CoreOfflineProcessor(
         auth_url=auth_endpoint,
         base_url=base_url,
         auth_credentials=auth_credentials,
         ordered_batches=batches,
-        batches_summary=summary,
-        job_code=job_code,
-        max_retries=5
+        batches_summary=summary
     )
     
-    results = migration_processor.process_batches_new_employees()
+    results = core_processor.process_batches_new_employees()
     
     logger.info(f"✓ Processed {len(results)} new employee records")
     logger.info(f"   - Successful: {sum(1 for ctx in results.values() if not ctx.has_errors)}")
@@ -402,10 +393,6 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
     # Classify users into SCM, IM, and Standard categories
     # For now, using simple classification - you can adjust based on your logic
     existing_userids = set(existing_employees_df['userid'].astype(str).str.lower())
-    
-    # Initialize empty DataFrames first to avoid NameError
-    scm_df = pd.DataFrame()
-    im_df = pd.DataFrame()
     
     # TODO: Implement proper logic to identify SCM and IM users
     # For now, assuming all existing users are standard users
@@ -472,7 +459,7 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
     all_field_changes = []
     sap_cache = SAPDataCache()
     sap_email_data = sap_cache.get('peremail_df')
-    if sap_email_data is None or sap_email_data.empty:
+    if sap_email_data is None:
         logger.warning("SAP email data not found in cache, email validation may fail")
         return None
     if scm_users_ids or im_users_ids:
@@ -482,7 +469,7 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
             ec_data=cached_ec_data,
             scm_users_ids=scm_users_ids,
             im_users_ids=im_users_ids,
-            table_names=migration_field_changes_tables,
+            table_names=regular_field_changes_tables,
             chunk_size=10000,
             postgres_connector=postgres_connector,
             sap_email_data=sap_email_data,
@@ -505,13 +492,12 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
     # Process standard users if any
     if standard_users_ids:
         logger.info("\nProcessing standard users...")
-
         standard_retriever = StandardUsersUpdatesRetriever(
             pdm_data=cached_pdm_data,
             ec_data=cached_ec_data,
             standard_users_ids=standard_users_ids,
             postgres_connector=postgres_connector,
-            table_names=migration_field_changes_tables,
+            table_names=regular_field_changes_tables,
             chunk_size=10000,
             sap_email_data=sap_email_data,
             run_id=run_id,
@@ -547,7 +533,7 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
 
 def process_field_updates(field_changes_df):
     """
-    Step 9: Process field updates for existing employees through CoreProcessor.
+    Step 9: Process field updates for existing employees through CoreOfflineProcessor.
     """
     if not PROCESS_FIELD_UPDATES or field_changes_df is None or len(field_changes_df) == 0:
         logger.info("Skipping field updates processing (disabled or no changes detected)")
@@ -557,20 +543,17 @@ def process_field_updates(field_changes_df):
     logger.info("STEP 9: Processing field updates for existing employees")
     logger.info("=" * 80)
     
-    # Initialize MigrationProcessor (can reuse existing instance or create new one)
-    job_code = 'T00001'
-    migration_processor = MigrationProcessor(
+    # Initialize CoreOfflineProcessor (can reuse existing instance or create new one)
+    core_processor = CoreOfflineProcessor(
         auth_url=auth_endpoint,
         base_url=base_url,
         auth_credentials=auth_credentials,
         ordered_batches=[],
-        batches_summary={},
-        job_code=job_code,
-        max_retries=5
+        batches_summary={}
     )
     
     # Process field updates
-    update_results = migration_processor.process_field_updates(field_changes_df)
+    update_results = core_processor.process_field_updates(field_changes_df)
     
     logger.info(f"✓ Processed updates for {len(update_results)} users")
     logger.info(f"   - Successful: {sum(1 for ctx in update_results.values() if not ctx.has_errors)}")
@@ -597,6 +580,7 @@ def process_inactive_users(inactive_employees_df, cached_pdm_data, cached_ec_dat
     inactive_retriever = InactiveUsersRetriever(
         inactive_users=inactive_employees_df,
         oracle_dsn=oracle_dsn,
+        extract_pdm_inactive_records_query=extract_pdm_inactive_records_query,
         cache_key='inactive_users'
     )
     
@@ -622,8 +606,7 @@ def process_inactive_users(inactive_employees_df, cached_pdm_data, cached_ec_dat
         inactive_user_df=inactive_users_with_details,
         auth_url=auth_endpoint,
         auth_credentials=auth_credentials,
-        base_url=base_url,
-        max_retries=5
+        base_url=base_url
     )
     
     # Process user deactivation
@@ -699,13 +682,11 @@ def send_notification_email(run_id):
     logger.info("=" * 80)
     
     postgres_connector = Psycopg2DatabaseConnection(postgres_url)
-    
-    # Combine both table names dictionaries for NotificationHandler
-    table_names = migration_pipeline_summary_tables | migration_field_changes_tables
+    tables_names = regular_pipeline_summary_tables | regular_field_changes_tables
     handler = NotificationHandler(
         run_id=run_id,
         postgres_connector=postgres_connector,
-        table_names=table_names
+        table_names=tables_names
     )
     
     # Prepare email returns tuple: (body, attachments)
@@ -730,7 +711,9 @@ if __name__ == "__main__":
     history_loader = None
     e = None  # Initialize exception variable for finally block
     try:
-        start_time_ = datetime.now()
+
+        start_time = datetime.now()
+
         logger.info("Starting PDM to EC Data Synchronization Pipeline")
         logger.info("Configuration:")
         logger.info(f"  - Extract DB Data: {EXTRACT_DATABASE_DATA}")
@@ -752,12 +735,12 @@ if __name__ == "__main__":
         
         # Initialize history tracking
         postgres_connector = Psycopg2DatabaseConnection(postgres_url)
-        table_names = migration_pipeline_summary_tables
-        history_loader = PipelineHistoryLoader(postgres_connector, table_names)
+        
+        history_loader = PipelineHistoryLoader(postgres_connector,table_names=regular_pipeline_summary_tables)
         
         # Calculate total records for processing
         total_records = len(cached_pdm_data) if cached_pdm_data is not None else 0
-        run_id = history_loader.start_pipeline_run(total_records, start_time_,country='CYPRUS')
+        run_id = history_loader.start_pipeline_run(total_records, start_time=start_time)
         logger.info(f"Pipeline run started with ID: {run_id}")
         
         # Clean any leftover failures from previous incomplete runs with same run_id
@@ -766,10 +749,10 @@ if __name__ == "__main__":
             conn = postgres_connector.get_postgres_db_connection()
             cursor = conn.cursor()
             # Delete from user_sync_results (not pipeline_run_summary - that's the main history record)
-            cursor.execute(f"DELETE FROM {migration_pipeline_summary_tables['user_sync_results']} WHERE run_id = %s", (run_id,))
+            cursor.execute(f"DELETE FROM {regular_pipeline_summary_tables['user_sync_results']} WHERE run_id = %s", (run_id,))
             # Delete from employee_field_changes and batches
-            cursor.execute(f"DELETE FROM {migration_field_changes_tables['employee_field_changes']} WHERE batch_id IN (SELECT batch_id FROM {migration_field_changes_tables['employee_field_changes_batches']} WHERE run_id = %s)", (run_id,))
-            cursor.execute(f"DELETE FROM {migration_field_changes_tables['employee_field_changes_batches']} WHERE run_id = %s", (run_id,))
+            cursor.execute(f"DELETE FROM {regular_field_changes_tables['employee_field_changes']} WHERE batch_id IN (SELECT batch_id FROM {regular_field_changes_tables['employee_field_changes_batches']} WHERE run_id = %s)", (run_id,))
+            cursor.execute(f"DELETE FROM {regular_field_changes_tables['employee_field_changes_batches']} WHERE run_id = %s", (run_id,))
             conn.commit()
             logger.info(f"Cleaned any previous data for run_id: {run_id}")
         except Exception as e:
@@ -845,15 +828,12 @@ if __name__ == "__main__":
                 all_results = []
             
                 # Initialize temp_processor for history extraction
-                job_code = 'T00001'
-                temp_processor = MigrationProcessor(
+                temp_processor = CoreOfflineProcessor(
                     auth_url=auth_endpoint,
                     base_url=base_url,
                     auth_credentials=auth_credentials,
                     ordered_batches=[],
-                    batches_summary={},
-                    job_code=job_code,
-                    max_retries=5
+                    batches_summary={}
                 )
             
                 # Extract history from new employees
@@ -879,7 +859,7 @@ if __name__ == "__main__":
                     all_results.extend(update_history['results'])
 
                 # Extract history from terminations
-                if disable_results and PROCESS_INACTIVE_USERS:
+                if disable_results:
                     temp_disable_processor = DisableUsersProcessor(
                         inactive_user_df=pd.DataFrame(),
                         auth_url=auth_endpoint,

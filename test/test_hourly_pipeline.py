@@ -457,6 +457,11 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
     logger.info(f"  - Standard users: {len(standard_users_ids)}")
     
     all_field_changes = []
+    sap_cache = SAPDataCache()
+    sap_email_data = sap_cache.get('peremail_df')
+    if sap_email_data is None:
+        logger.warning("SAP email data not found in cache, email validation may fail")
+        return None
     if scm_users_ids or im_users_ids:
         logger.info("\nProcessing SCM/IM users...")
         scm_im_retriever = SCM_IM_UpdatesRetriever(
@@ -467,6 +472,7 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
             table_names=regular_field_changes_tables,
             chunk_size=10000,
             postgres_connector=postgres_connector,
+            sap_email_data=sap_email_data,
             run_id=run_id,
             batch_context="SCM/IM Users"
         )
@@ -486,13 +492,6 @@ def detect_field_changes(cached_pdm_data, cached_ec_data, existing_employees_df,
     # Process standard users if any
     if standard_users_ids:
         logger.info("\nProcessing standard users...")
-        # Load SAP email data from cache
-        sap_cache = SAPDataCache()
-        sap_email_data = sap_cache.get('peremail_df')
-        if sap_email_data is None:
-            logger.warning("SAP email data not found in cache, email validation may fail")
-            sap_email_data = pd.DataFrame()
-        
         standard_retriever = StandardUsersUpdatesRetriever(
             pdm_data=cached_pdm_data,
             ec_data=cached_ec_data,

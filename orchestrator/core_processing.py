@@ -17,9 +17,10 @@ from utils.logger import get_logger
 from utils.date_converter import convert_to_unix_timestamp
 from mapper.retrieve_person_id_external import get_userid_from_personid
 from planning.convert_pdm_data import convert_pdm_data
+from planning.email_resolver import EmailResolver
 from payload_builders.user._user import build_user_role_payload
-from datetime import datetime
 import pandas as pd
+
 
 
 Logger = get_logger("core_processor")
@@ -166,6 +167,12 @@ class CoreProcessor:
         self.oracle_cache = OracleDataCache()
         self.sap_cache = SAPDataCache()
         self.employees_cache = EmployeesDataCache()
+        self.hr_global_users = set(
+            self.oracle_cache.get('pdm_data_df')[
+                self.oracle_cache.get('pdm_data_df')['division'].str.lower() == 'human resources'
+            ]['userid'].astype(str).str.lower()
+        )
+        self.sap_email_data = self.sap_cache.get('peremail_df')
 
     def process_batches_new_employees(self):
         """
@@ -371,7 +378,6 @@ class CoreProcessor:
         """
         try:
             user_id = ctx.user_id
-            Logger.info(f"Start processing user {user_id}")
 
             if pd.isna(user_id) or not str(user_id).strip():
                 ctx.fail("Missing or null userid")
@@ -389,11 +395,7 @@ class CoreProcessor:
                 return
 
             # 2️ PERSON
-            Logger.info(f"About to call _handle_person for user {user_id}")
             self._handle_person(row, ctx)
-            Logger.info(
-                f"After _handle_person for user {user_id}, has_errors={ctx.has_errors}, errors={ctx.errors}"
-            )
             if ctx.has_errors:
                 Logger.error(
                     f"Early return after person handling for {user_id} due to errors: {ctx.errors}"
@@ -401,30 +403,17 @@ class CoreProcessor:
                 return
 
             # 3️ EMPLOYMENT
-            Logger.info(
-                f"About to call _handle_employment for user {user_id}, ctx.has_errors={ctx.has_errors}"
-            )
             self._handle_employment(row, ctx, results)
             if ctx.has_errors:
                 return
             # 4 User Role
-            Logger.info(f"About to handle UserRole for user {user_id}")
             self._handle_ep_ec_roles(row, ctx)
             if ctx.has_errors:
                 ctx.warn("Errors encountered during UserRole handling")
             # 5 POSITION MATRIX RELATIONSHIPS
             position_builder = ctx.builders.get("position")
-            Logger.info(
-                f"Position builder for user {user_id}: {position_builder is not None}"
-            )
             if position_builder:
-                Logger.info(
-                    f"Calling _handle_position_matrix_relationship for user {user_id}"
-                )
                 self._handle_position_matrix_relationship(row, ctx, position_builder)
-                Logger.info(
-                    f"After _handle_position_matrix_relationship for user {user_id}, has_errors={ctx.has_errors}"
-                )
                 if ctx.has_errors:
                     Logger.error(
                         f"Early return after position matrix for {user_id} due to errors: {ctx.errors}"
@@ -440,9 +429,6 @@ class CoreProcessor:
 
             # Skip relationships if waiting for position_code
             if ctx.runtime.get("needs_position_lookup"):
-                Logger.info(
-                    f"Skipping relationships for user {user_id} - needs position_code (will retry after Position upsert)"
-                )
                 return
 
             # 6 RELATIONSHIPS
@@ -534,8 +520,6 @@ class CoreProcessor:
                 )
                 # Don't return - continue processing employment and relationships
             else:
-                # Position doesn't exist, create payload
-                Logger.info(f"Will create new position for user {user_id}")
 
                 payload = position_builder.build_position()
                 if not payload:
@@ -570,6 +554,14 @@ class CoreProcessor:
         try:
             user_id = ctx.user_id
 
+            email_resolver = EmailResolver()
+            resolved = email_resolver.resolve_user_email(userid=user_id, pdm_row=row, hr_global_users=self.hr_global_users, sap_email_data=self.sap_email_data)
+            safe_row = row.copy()
+            safe_row["email"] = resolved["business_email"]
+            safe_row["private_email"] = resolved["private_email"]
+            ctx.runtime["original_row"] = safe_row
+            row = safe_row
+            Logger.info(f"Emails resolved for user {user_id}")
             person_validator = PersonValidator(
                 record=row,
                 required_fields=[
@@ -619,13 +611,9 @@ class CoreProcessor:
 
             Logger.info(f"Building person payloads for user {user_id}")
 
-            # Use start_of_employment (hire date) for PerPersonal, not date_of_position
-            # SAP requires PerPersonal startDate to match the employment relationship record
-            employment_start_date = (
-                row.get("start_of_employment")
-                or row.get("hiredate")
-                or row.get("date_of_position")
-            )
+            
+            employment_start_date = row.get("date_of_position")
+            
 
             person_builder = PersonPayloadBuilder(
                 first_name=row["firstname"],
@@ -642,7 +630,6 @@ class CoreProcessor:
                 postgres_cache=self.postgres_cache,
             )
             # PerPerson payload
-            Logger.info(f"Building PerPerson payload for user {user_id}")
             perperson_payload = person_builder.build_perperson_payload()
             if not perperson_payload:
                 err = getattr(person_builder, "last_error", None)
@@ -652,10 +639,8 @@ class CoreProcessor:
                 )
                 return
             ctx.payloads["perperson"] = perperson_payload
-            Logger.info(f"✓ PerPerson payload built for user {user_id}")
 
             # PerPersonal payload
-            Logger.info(f"Building PerPersonal payload for user {user_id}")
             perpersonal_payload = person_builder.build_perpersonal_payload()
             if not perpersonal_payload:
                 err = getattr(person_builder, "last_error", None)
@@ -665,63 +650,53 @@ class CoreProcessor:
                 )
                 return
             ctx.payloads["perpersonal"] = perpersonal_payload
-            Logger.info(f"✓ PerPersonal payload built for user {user_id}")
 
             # PerEmail payload (Business Email)
-            # if row.get("email") is None or pd.isna(row.get("email")):
-            #     ctx.warn(
-            #         f"Email is missing for user {user_id}, skipping PerEmail payload"
-            #     )
-            # else:
-            #     private_email = row.get("private_email")
-            #     if (
-            #         not private_email
-            #         or pd.isna(private_email)
-            #         or str(private_email).strip().lower() == "false"
-            #     ):
-            #         private_email = False
-            #     else:
-            #         private_email = True
-            #     peremail_payload = person_builder.build_peremail_payload(
-            #         is_business_email=not private_email
-            #     )
-            #     if not peremail_payload:
-            #         err = getattr(person_builder, "last_error", None)
-            #         extra = f" Builder error: {err}" if err else ""
-            #         ctx.fail(
-            #             f"Failed to build peremail payload for user {user_id}.{extra}"
-            #         )
-            #         return
-            #     ctx.payloads["peremail"] = peremail_payload
 
-            # # PerEmail payload (Private Email)
-            # if row.get("private_email") is None or pd.isna(row.get("private_email")):
-            #     Logger.info(
-            #         f"Private Email is missing for user {user_id}, skipping PerEmail (private) payload"
-            #     )
-            # else:
-            #     peremail_private_payload = person_builder.build_peremail_payload(
-            #         is_business_email=False
-            #     )
-            #     if not peremail_private_payload:
-            #         err = getattr(person_builder, "last_error", None)
-            #         extra = f" Builder error: {err}" if err else ""
-            #         ctx.fail(
-            #             f"Failed to build peremail (private) payload for user {user_id}.{extra}"
-            #         )
-            #         return
-            #     # Extend existing peremail payloads to include private email if both exist
-            #     if "peremail" in ctx.payloads:
-            #         existing_payload = ctx.payloads["peremail"]
-            #         if isinstance(existing_payload, list):
-            #             existing_payload.append(peremail_private_payload)
-            #         else:
-            #             ctx.payloads["peremail"] = [
-            #                 existing_payload,
-            #                 peremail_private_payload,
-            #             ]
-            #     else:
-            #         ctx.payloads["peremail"] = peremail_private_payload
+            business_email = row.get("email")
+            private_email = row.get("private_email")
+            
+            # Business email is mandatory
+            if business_email is None or pd.isna(business_email) or str(business_email).strip() == "":
+                ctx.warn(f"Email is missing for user {user_id}, skipping PerEmail payload")
+                return
+            
+            business_email_norm = str(business_email).strip().lower()
+            
+            # Always store peremail as a list (consistent)
+            peremail_payloads = []
+            
+            # ---- Build business email payload
+            business_payload = person_builder.build_peremail_payload(is_business_email=True)
+            if not business_payload:
+                err = getattr(person_builder, "last_error", None)
+                extra = f" Builder error: {err}" if err else ""
+                ctx.fail(f"Failed to build PerEmail (business) payload for user {user_id}.{extra}")
+                return
+            
+            peremail_payloads.append(business_payload)
+            
+            # ---- Private email payload (optional)
+            if private_email is None or pd.isna(private_email) or str(private_email).strip() == "":
+                pass
+            else:
+                private_email_norm = str(private_email).strip().lower()
+            
+                # Only create private email if different from business
+                if private_email_norm != business_email_norm:
+                    private_payload = person_builder.build_peremail_payload(is_business_email=False)
+            
+                    if not private_payload:
+                        err = getattr(person_builder, "last_error", None)
+                        extra = f" Builder error: {err}" if err else ""
+                        ctx.warn(
+                            f"Failed to build PerEmail (private) payload for user {user_id}.{extra}"
+                        )
+                    else:
+                        peremail_payloads.append(private_payload)
+            
+            # Save only if we have at least 1 payload
+            ctx.payloads["peremail"] = peremail_payloads
             # PerPhone payload
             if row.get("phone") is None or pd.isna(row.get("phone")):
                 Logger.info(
@@ -823,24 +798,17 @@ class CoreProcessor:
         """
         try:
             user_id = ctx.user_id
-            Logger.info(f"_handle_employment called for user {user_id}")
             employment_validator = EmploymentExistenceValidator(
                 user_id=user_id, ec_user_id=ctx.ec_user_id, results=results
             )
             emp_mapping = employment_validator.get_job_mapping()
             position, seq_num, start_date = None, None, None
-            Logger.info(
-                f"Employment mapping for {user_id}: empty={emp_mapping.empty}, position_being_created={ctx.runtime.get('position_being_created')}"
-            )
 
             if not emp_mapping.empty:
                 # User already has employment record in SAP
                 position = emp_mapping.iloc[0]["position"]
                 seq_num = emp_mapping.iloc[0]["seqnumber"]
                 start_date = emp_mapping.iloc[0]["startdate"]
-                Logger.info(
-                    f"User {user_id} has existing employment with position {position} and seqNumber {seq_num} (startDate: {start_date})"
-                )
                 seq_num = int(seq_num) + 1  # Increment for new job record
             else:
                 seq_num = 1
@@ -850,21 +818,18 @@ class CoreProcessor:
                     position = ctx.position_code
                     if not position:
                         # Position not yet created, mark for retry after Position upsert
-                        Logger.info(
-                            f"Position not yet created for user {user_id}, marking for retry after Position creation"
-                        )
                         ctx.runtime["needs_position_lookup"] = True
                         return
                 else:
-                    # User has no position and we didn't create one - this is an error
-                    Logger.info(f"Checking positions cache for user {user_id}")
-                    position = employment_validator.position_code_exists_in_employees()
-                    Logger.info(f"Position from cache for {user_id}: {position}")
+                    position= ctx.position_code
                     if not position:
-                        ctx.fail(
-                            f"Cannot determine position code for employment creation for user {user_id}"
-                        )
-                        return
+                        # User has no position and we didn't create one - this is an error
+                        position = employment_validator.position_code_exists_in_employees()
+                        if not position:
+                            ctx.fail(
+                                f"Cannot determine position code for employment creation for user {user_id}"
+                            )
+                            return
 
             try:
                 seq_num = int(seq_num)
@@ -888,9 +853,6 @@ class CoreProcessor:
 
             # Use INITLOAD for first job record (seqNumber=1), DATACHG for subsequent records
             event_reason = "INITLOAD" if seq_num == 1 else "DATACHG"
-            Logger.info(
-                f"Building EmpJob for user {user_id} with seqNumber={seq_num}, eventReason={event_reason}, managerId={manager_id}"
-            )
 
             employment_builder = EmploymentPayloadBuilder(
                 user_id=user_id,
@@ -926,9 +888,6 @@ class CoreProcessor:
             # Store calculated startDate in context for reuse
             if employment_builder.calculated_start_date:
                 ctx.empjob_start_date = employment_builder.calculated_start_date
-                Logger.info(
-                    f"Stored empjob_start_date {ctx.empjob_start_date} for user {user_id}"
-                )
         except Exception as e:
             ctx.fail(f"Error building employment payloads for user {ctx.user_id}: {e}")
 
@@ -986,7 +945,7 @@ class CoreProcessor:
             if rel_payloads:
                 ctx.payloads["empjobrelationships"] = rel_payloads
             else:
-                Logger.info(f"No relationships to build for user {ctx.user_id}")
+                Logger.warning(f"No relationships to build for user {ctx.user_id}")
 
         except Exception as e:
             ctx.fail(f"Error building relationships for user {ctx.user_id}: {e}")
@@ -1017,9 +976,6 @@ class CoreProcessor:
 
         # Same relationship already exists → skip only this relationship
         if existing_rel and existing_rel.lower() == relation_user.lower():
-            Logger.info(
-                f"{label} relationship already exists for user {ctx.user_id} with {relation_user}, skipping."
-            )
             return
 
         # Different relationship exists → delete old one
@@ -1143,7 +1099,9 @@ class CoreProcessor:
         3. Compare roles and build User payload following the logic above.
         """
         try:
-            user_id = ctx.user_id
+            user_id = ctx.ec_user_id
+            if not user_id:
+                user_id=get_userid_from_personid(person_id=user_id)
             pdm_role = (
                 row.get("custom_string_8", "").strip()
                 if pd.notna(row.get("custom_string_8"))
@@ -1164,11 +1122,11 @@ class CoreProcessor:
                     ec_roles_df["userid"].astype(str).str.lower() == user_id.lower()
                 ]
                 if not user_role_row.empty:
-                    ec_role = user_role_row.iloc[0]["role"].strip()
-
-            Logger.info(
-                f"User {user_id} - PDM role: '{pdm_role}', EC role: '{ec_role}'"
-            )
+                    raw_role = user_role_row.iloc[0].get("ep_ec_role")
+                    if pd.isna(raw_role):
+                        ec_role = ""
+                    else:
+                        ec_role = str(raw_role).strip()
 
             # Determine if update is needed
             if pdm_role and pdm_role != ec_role:
@@ -1184,9 +1142,6 @@ class CoreProcessor:
                     )
                     return
                 ctx.payloads["userrole"] = user_payload
-                Logger.info(
-                    f"Prepared User payload to update role to '{pdm_role}' for user {user_id}"
-                )
             elif not pdm_role and ec_role:
                 # PDM role is null but EC role exists - set default 'EP' role in EC
                 user_payload = build_user_role_payload(
@@ -1199,11 +1154,8 @@ class CoreProcessor:
                     )
                     return
                 ctx.payloads["userrole"] = user_payload
-                Logger.info(
-                    f"Prepared User payload to set default role 'EP' for user {user_id}"
-                )
             else:
-                Logger.info(f"No role update needed for user {user_id}")
+                return  # No action needed
         except Exception as e:
             Logger.error(
                 f"Error handling EP/EC roles for user {ctx.user_id}: {e}", exc_info=True
@@ -1265,9 +1217,6 @@ class CoreProcessor:
                     if not ctx.is_update and not self._can_execute_entity(
                         ctx, entity_name
                     ):
-                        Logger.info(
-                            f"Skipping {entity_name} for user {user_id} (dependencies not satisfied)"
-                        )
                         ctx.runtime["entity_status"][entity_name] = "SKIPPED"
                         continue
 
@@ -1350,9 +1299,6 @@ class CoreProcessor:
                             ctx.fail(error_details)
                         else:
                             ctx.runtime["entity_status"][entity_name] = "SUCCESS"
-                            Logger.info(
-                                f"{entity_name} upsert succeeded for user {user_id}"
-                            )
                 else:
                     responses = self.upsert_client.upsert_entity_for_users(
                         entity_name=entity_name, user_payloads=eligible_payloads
@@ -1384,9 +1330,6 @@ class CoreProcessor:
                                 ctx.fail(error_details)
                         else:
                             ctx.runtime["entity_status"][entity_name] = "SUCCESS"
-                            Logger.info(
-                                f"{entity_name} upsert succeeded for user {user_id}"
-                            )
 
                             # Store position_code from response for employment processing
                             # Key format: "Position/code=1020001,Position/effectiveStartDate=2026-01-14T00:00:00.000Z"
@@ -1396,9 +1339,6 @@ class CoreProcessor:
                                 if "code=" in key:
                                     position_code = key.split("code=")[1].split(",")[0]
                                     ctx.position_code = position_code
-                                    Logger.info(
-                                        f"Stored position_code {ctx.position_code} for user {user_id}"
-                                    )
                                 else:
                                     Logger.warning(
                                         f"Could not parse position code from key: {key}"
@@ -1417,9 +1357,6 @@ class CoreProcessor:
                             and not ctx.has_errors
                             and ctx.position_code
                         ):
-                            Logger.info(
-                                f"Retrying employment & position matrix building for user {user_id} with position_code {ctx.position_code}"
-                            )
                             row = ctx.runtime.get("original_row")
                             if row is None:
                                 Logger.warning(
@@ -1450,9 +1387,7 @@ class CoreProcessor:
                                 if not ctx.has_errors:
                                     self._collect_payloads(ctx)
                             else:
-                                Logger.info(
-                                    f"Retry skipped for EmpEmployment for user {user_id} (dependencies not satisfied)"
-                                )
+                                continue
 
                 # Sync Position to Job after EmpJob success (triggers SAP PositionToJobInfoSyncRule)
                 if entity_name == "EmpJob":
@@ -1464,10 +1399,6 @@ class CoreProcessor:
 
                     position_sync_payloads = {}
                     for user_id, ctx in results.items():
-                        # Only sync for users with successful Position AND EmpJob creation
-                        Logger.info(
-                            f"Checking Position sync eligibility for user {user_id} with position_code={ctx.position_code} and empjob_start_date={ctx.empjob_start_date}"
-                        )
                         if (
                             user_id in batch_user_ids
                             and ctx.runtime.get("entity_status", {}).get("EmpJob")
@@ -1508,10 +1439,6 @@ class CoreProcessor:
                                     ec_user_id=ctx.ec_user_id,
                                 )
 
-                            Logger.info(
-                                f"[POSITION SYNC] Building sync payload for user {user_id}: position_code={ctx.position_code}, effectiveStartDate={ctx.empjob_start_date}"
-                            )
-
                             # Build Position payload with sync_pos_to_emp=True
                             sync_payload = position_builder.build_position(
                                 sync_pos_to_emp=True,
@@ -1523,9 +1450,6 @@ class CoreProcessor:
                                 # Store in ctx.payloads for history tracking (payload_snapshot)
                                 ctx.payloads["position_sync"] = sync_payload
                                 position_sync_payloads[user_id] = [sync_payload]
-                                Logger.info(
-                                    f"[POSITION SYNC] Sync payload built and stored for user {user_id}"
-                                )
                             else:
                                 Logger.warning(
                                     f"[POSITION SYNC] Failed to build sync payload for user {user_id}"
@@ -1555,9 +1479,7 @@ class CoreProcessor:
                                     f"Position-to-Job sync failed: {result.get('message')}"
                                 )
                             else:
-                                Logger.info(
-                                    f"[POSITION SYNC] Successfully synced Position to Job for user {user_id}"
-                                )
+                                continue
 
                     Logger.info("=" * 80)
 
@@ -1674,10 +1596,6 @@ class CoreProcessor:
             pdm_value = row.get("pdm_value")
             ec_value = row.get("ec_value")
 
-            Logger.info(
-                f"Processing field change: user={user_id}, field='{field}', pdm_value='{pdm_value}', ec_value='{ec_value}'"
-            )
-
             if user_id not in dirty_entities:
                 dirty_entities[user_id] = {"entities": set(), "email_actions": []}
 
@@ -1716,13 +1634,11 @@ class CoreProcessor:
                     dirty_entities[user_id]["entities"].update(entities)
                 else:
                     dirty_entities[user_id]["entities"].add(entities)
-                Logger.info(f"Mapped field '{field}' to entities: {entities}")
             else:
                 Logger.warning(
                     f"Field '{field}' not found in DIRTY_FIELD_TO_ENTITY mapping for user {user_id}"
                 )
 
-        Logger.info(f"Extracted dirty entities for {len(dirty_entities)} users")
         return dirty_entities
 
     def _build_update_payloads(
@@ -1740,16 +1656,10 @@ class CoreProcessor:
         user_id = ctx.user_id
         dirty_entities = ctx.dirty_entities
 
-        Logger.info(
-            f"Building update payloads for user {user_id}, entities: {dirty_entities}"
-        )
         # Store EC user ID if exists
         ctx.ec_user_id = get_userid_from_personid(person_id=user_id)
 
         # Collect position_code and last start date from EmpJob
-        Logger.info(
-            f"Collecting existing position_code and effective_date for user with pdm id: {user_id} and ec user id: {ctx.ec_user_id} during update payload building"
-        )
         position_code, start_date = (
             self._collect_position_code_effective_date_for_updates(
                 user_id=user_id, ctx=ctx
@@ -1758,13 +1668,6 @@ class CoreProcessor:
         if position_code and start_date:
             ctx.position_code = position_code
             ctx.empjob_start_date = start_date
-            Logger.info(
-                f"Collected position_code {position_code} and empjob_start_date {start_date} for user {user_id}"
-            )
-        else:
-            Logger.info(
-                f"No existing position_code/effective_date found for user {user_id} during update payload building"
-            )
 
         # Position updates
         if "Position" in dirty_entities:
@@ -1795,7 +1698,6 @@ class CoreProcessor:
         """
         try:
             user_id = ctx.user_id
-            Logger.info(f"Building Position update for user {user_id}")
             has_position = False
 
             # Get existing position code from employees cache
@@ -1803,12 +1705,14 @@ class CoreProcessor:
             if employees_df is not None and not employees_df.empty:
                 # Retrieve personexternalid from get_userid_from_personid
                 ec_user_id = ctx.ec_user_id
+                # Put Mask to retrieve position for the given ec_user_id,and filter by jobcode != "T00001"
                 emp_mask = (
                     employees_df["userid"]
                     .astype(str)
                     .str.lower()
                     .eq(ec_user_id.lower())
-                )
+                ) & (employees_df["jobcode"] != "T00001")
+
                 emp_result = employees_df[emp_mask]
                 if not emp_result.empty:
                     existing_position = emp_result["position"].values[0]
@@ -1816,9 +1720,14 @@ class CoreProcessor:
                     if existing_position:
                         ctx.position_code = existing_position
                         has_position = True
-                        Logger.info(
-                            f"Found existing position code {existing_position} for user {user_id}"
+                    else:
+                        Logger.warning(
+                            f"No existing position found in employees cache for user {user_id}" 
                         )
+                else:
+                    Logger.warning(
+                        f"No employee record found in employees cache for user {user_id}"
+                    )
 
             # Validate required fields
             required_fields = [
@@ -1879,27 +1788,17 @@ class CoreProcessor:
                     position_payload = position_builder.build_position(
                         position_code_=ctx.position_code
                     )
-                else:
-                    Logger.info(
-                        f"Skipping Position update for user {user_id} as EmpJob is also being updated to avoid Trigger PositionToJobInfoSyncRule Twice and conflicts"
-                    )
-                    return
             else:
                 # If position Does NOT exists, Creating a new position with the provided details
                 position_payload = position_builder.build_position()
             if not position_payload:
                 ctx.fail(f"Failed to build position update payload for user {user_id}")
-                Logger.error(f"Position update payload build failed for user {user_id}")
                 return
             if position_builder.position_code:
                 if ctx.position_code != position_builder.position_code:
                     ctx.position_code = position_builder.position_code
-                    Logger.info(
-                        f"Updated position code in context for user {user_id} to {ctx.position_code}"
-                    )
             ctx.payloads["position"] = position_payload
             ctx.builders["position"] = position_builder
-            Logger.info(f"Position update payload built for user {user_id}")
 
         except Exception as e:
             ctx.fail(f"Error building position update for user {ctx.user_id}: {e}")
@@ -1913,9 +1812,6 @@ class CoreProcessor:
         """
         try:
             user_id = ctx.user_id
-            Logger.info(
-                f"Building Person updates for user {user_id}, entities: {dirty_entities}"
-            )
             # Mark dependencies as SUCCESS if not dirty to not block processing
             for entity in ["PerPerson", "PerPersonal", "PerEmail", "PerPhone"]:
                 deps = self.ENTITY_DEPENDENCIES.get(entity, [])
@@ -1925,11 +1821,8 @@ class CoreProcessor:
 
             # Build PersonPayloadBuilder once for all person entities
             # Use start_of_employment (hire date) for PerPersonal, not date_of_position
-            employment_start_date = (
-                row.get("start_of_employment")
-                or row.get("hiredate")
-                or row.get("date_of_position")
-            )
+            employment_start_date = row.get("date_of_position")
+
 
             person_builder = PersonPayloadBuilder(
                 first_name=row.get("firstname"),
@@ -1968,8 +1861,8 @@ class CoreProcessor:
 
             # PerEmail (special handling via email actions): For more details, see _handle_email_updates method:
             # This allows more control over email insertions, updates, deletions, promotions, and demotions.
-            # if "PerEmail" in dirty_entities:
-            #     self._handle_email_updates(ctx, person_builder)
+            if "PerEmail" in dirty_entities:
+                self._handle_email_updates(ctx, person_builder)
 
             # PerPhone
             if "PerPhone" in dirty_entities:
@@ -2012,9 +1905,6 @@ class CoreProcessor:
             user_id = ctx.user_id
             email_actions_flat = ctx.runtime.get("email_actions", [])
             if not email_actions_flat:
-                Logger.info(
-                    f"No email actions for {user_id}, skipping peremail payloads"
-                )
                 return
 
             # Transform flat list into structured format
@@ -2041,7 +1931,7 @@ class CoreProcessor:
                 elif action == "demote":
                     email_actions["primary"]["demote"] = (email, email_type)
                 else:
-                    Logger.warning(
+                    ctx.warn(
                         f"Unknown email action '{action}' for user {user_id}"
                     )
 
@@ -2054,7 +1944,7 @@ class CoreProcessor:
                     email_actions["primary"]["demote"],
                 ]
             ):
-                Logger.info(
+                ctx.warn(
                     f"No valid email actions after transformation for {user_id}"
                 )
                 return
@@ -2078,9 +1968,7 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "DEMOTE"
                     payloads.append(payload)
-                    Logger.info(
-                        f"Demoting primary for {user_id}: {email} ({email_type})"
-                    )
+
 
             # DELETE existing emails
             for email, email_type in email_actions.get("delete", []):
@@ -2090,9 +1978,7 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "DELETE"
                     payloads.append(payload)
-                    Logger.info(
-                        f"Added DELETE payload for {user_id}: {email} ({email_type})"
-                    )
+
 
             # UPDATE email type
             for email, new_type in email_actions.get("update_type", []):
@@ -2102,9 +1988,7 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "UPDATE_TYPE"
                     payloads.append(payload)
-                    Logger.info(
-                        f"Added UPDATE_TYPE payload for {user_id}: {email} → type {new_type}"
-                    )
+
 
             # PROMOTE - Set new primary email (if email doesn't exist, this also inserts it)
             if promote:
@@ -2115,17 +1999,12 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "PROMOTE"
                     payloads.append(payload)
-                    Logger.info(
-                        f"Promoting to primary for {user_id}: {email} ({email_type})"
-                    )
+
 
             # INSERT new emails (skip if email is being promoted - promote handles both insert + primary)
             for email, email_type in email_actions.get("insert", []):
                 # Skip if this email is being promoted (promote will handle the insert)
                 if promote and email == promote[0] and email_type == promote[1]:
-                    Logger.info(
-                        f"Skipping INSERT for {user_id}: {email} ({email_type}) - will be handled by PROMOTE"
-                    )
                     continue
 
                 is_primary = (
@@ -2140,9 +2019,6 @@ class CoreProcessor:
                 if payload:
                     payload["_email_action"] = "INSERT"
                     payloads.append(payload)
-                    Logger.info(
-                        f"Added INSERT payload for {user_id}: {email} ({email_type})"
-                    )
 
             if payloads:
                 deduped = []
@@ -2161,9 +2037,6 @@ class CoreProcessor:
                         key = None
 
                     if key and key in seen:
-                        Logger.info(
-                            f"Skipping duplicate PerEmail payload for {user_id}: {key}"
-                        )
                         continue
 
                     if key:
@@ -2171,9 +2044,6 @@ class CoreProcessor:
                     deduped.append(p)
 
                 ctx.payloads["peremail"] = deduped if len(deduped) > 1 else deduped[0]
-                Logger.info(
-                    f"Email payloads built for {user_id}: {len(deduped)} payload(s) (deduped from {len(payloads)})"
-                )
             else:
                 ctx.warn(
                     f"No payloads generated for user {user_id} despite email actions"
@@ -2202,9 +2072,6 @@ class CoreProcessor:
                         ctx.runtime["entity_status"][dep] = "SUCCESS"
 
             user_id = ctx.user_id
-            Logger.info(
-                f"Building Employment updates for user {user_id}, entities: {dirty_entities}"
-            )
 
             # Get position code from context or employees cache
             position_code = ctx.position_code
@@ -2212,7 +2079,8 @@ class CoreProcessor:
                 # Fallback: try employees cache for existing users
                 employees_df = self.sap_cache.get("employees_df")
                 if employees_df is not None:
-                    match = employees_df[employees_df["userid"] == user_id]
+                    # Filter to retrieve match with user_id and jobcode different than the historical dummy jobcode T00001
+                    match = employees_df[(employees_df["userid"] == user_id) & (employees_df["jobcode"] != "T00001")]
                     if not match.empty:
                         position_code = match["position"].values[0]
                         ctx.position_code = position_code  # Store for future use
@@ -2318,9 +2186,6 @@ class CoreProcessor:
                     ctx.runtime["entity_status"][dep] = "SUCCESS"
 
             user_id = ctx.user_id
-            Logger.info(
-                f"Building PositionMatrixRelationship update for user {user_id}"
-            )
 
             position_builder = ctx.builders.get("position")
             if not position_builder:
@@ -2344,7 +2209,7 @@ class CoreProcessor:
             hr_manager = row.get("hr", "").strip() if pd.notna(row.get("hr")) else ""
 
             if not matrix_manager and not hr_manager:
-                Logger.info(
+                ctx.warn(
                     f"No matrix manager or HR for user {user_id}, skipping PositionMatrixRelationships"
                 )
                 return
@@ -2362,11 +2227,8 @@ class CoreProcessor:
                 )
                 if matrix_payload:
                     payloads.append(matrix_payload)
-                    Logger.info(
-                        f"Matrix manager relationship payload built for user {user_id}"
-                    )
                 else:
-                    Logger.warning(
+                    ctx.warn(
                         f"Failed to build matrix manager relationship for user {user_id}"
                     )
 
@@ -2381,18 +2243,14 @@ class CoreProcessor:
                 )
                 if hr_payload:
                     payloads.append(hr_payload)
-                    Logger.info(f"HR relationship payload built for user {user_id}")
                 else:
-                    Logger.warning(
+                    ctx.warn(
                         f"Failed to build HR relationship for user {user_id}"
                     )
 
             if payloads:
                 ctx.payloads["positionmatrixrelationships"] = (
                     payloads if len(payloads) > 1 else payloads[0]
-                )
-                Logger.info(
-                    f"PositionMatrixRelationship update payload(s) built for user {user_id}: {len(payloads)} relationship(s)"
                 )
             else:
                 ctx.warn(
@@ -2430,17 +2288,14 @@ class CoreProcessor:
                 if not emp_result.empty:
                     start_date = emp_result["startdate"].values[0]
                     position_code = emp_result["position"].values[0]
-                    Logger.info(
-                        f"Collected position code {position_code} and start date {start_date} for user {user_id}"
-                    )
                     return position_code, start_date
                 else:
-                    Logger.warning(
+                    ctx.warn(
                         f"No employee record found for user with pdm id: {user_id} and ec user id: {ec_user_id} in employees cache"
                     )
                     return None, None
             else:
-                Logger.warning("Employees cache is empty or not available")
+                ctx.warn("Employees cache is empty or not available")
                 return None, None
         except Exception as e:
             Logger.error(

@@ -36,9 +36,7 @@ class EmploymentExistenceValidator:
                 if self.raise_if_missing:
                     logger.error(msg)
                     raise ValueError(msg)
-                logger.info(msg)
             else:
-                logger.info(f"User ID {self.user_id} exists in SAP system.")
                 result = result[['position','seqnumber', 'startdate']]
         
             return result
@@ -82,9 +80,7 @@ class EmploymentExistenceValidator:
             result = self.emp_data[mask]
             if not result.empty:
                 position_code = result['position'].values[0]
-                logger.info(f"Position code {position_code} found for user ID {self.user_id}.")
                 return position_code
-            logger.info(f"No position code found for user ID {self.user_id}.")
             return None
         except Exception as e:
             msg = f"Error checking position code existence for user ID {self.user_id}: {str(e)}"

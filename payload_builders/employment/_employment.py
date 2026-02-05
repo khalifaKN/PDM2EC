@@ -105,25 +105,22 @@ class EmploymentPayloadBuilder:
     def build_empjob_payload(self, migration_flag: bool = False):
         try:
             payload = get_emp_job()
-            # Check if hire_date is after start_of_employment, the current format are "/Date(UnixTimestamp)/" like /Date(1768348800000)/
-            manager_position_start_date_ts = None
-            if self.manager_position_start_date:
-                manager_position_start_date_ts = int(self.manager_position_start_date.strip("/Date()")) // 1000
 
             # INITLOAD: use the oldest date (hire_date)
             # DATACHG: use the newest date (start_of_employment)
+            hire_date_newest = False
+            hire_date_ts = int(self.hire_date.strip("/Date()")) // 1000
+            start_of_employment_ts = int(self.start_of_employment.strip("/Date()")) // 1000
+            if hire_date_ts > start_of_employment_ts:
+                Logger.warning(
+                    f"Hire date {self.hire_date} is after start of employment {self.start_of_employment} for user {self.user_id}. Using start of employment as hire date."
+                )
+                hire_date_newest = True
             if self.build_event_reason == "INITLOAD":
-                    start_date_ = self.hire_date
+                    start_date_ = self.hire_date if not hire_date_newest else self.start_of_employment
 
             else:
-                    start_date_ = self.start_of_employment
-                
-            if manager_position_start_date_ts:
-                if manager_position_start_date_ts > int(start_date_.strip("/Date()")) // 1000:
-                    Logger.warning(
-                        f"Manager position start date {self.manager_position_start_date} is after calculated start date {start_date_} for user {self.user_id}. Using manager position start date as start date."
-                    )
-                    start_date_ = convert_to_unix_timestamp(self.manager_position_start_date)
+                    start_date_ = self.start_of_employment if not hire_date_newest else self.hire_date
 
             # If we have last EmpJob startDate (for existing employees), validate against backdating
             if self.start_date:
@@ -143,15 +140,16 @@ class EmploymentPayloadBuilder:
             # Store calculated startDate for reuse
             self.calculated_start_date = start_date_
             payload["startDate"] = start_date_
-            
             payload["userId"] = self.user_id
             payload["position"] = self.position
             payload["company"] = self.company
+            payload["standardHours"] = "40"  #standard 40 hours work week
             # seqNumber=1 INITLOAD, else DATACHG
             if self.build_event_reason:
                 payload["eventReason"] = self.build_event_reason
+            if self.build_event_reason == "DATACHG":
+                payload["customString15"] = "20317" # For Test env, for prod is 20263
             payload["seqNumber"] = self.seq_num
-            payload["costCenter"] = self.cost_center
             # Always set managerId, use "NO_MANAGER" if missing or invalid
             if migration_flag:
                 payload["managerId"] = "NO_MANAGER"
@@ -160,7 +158,7 @@ class EmploymentPayloadBuilder:
             else:
                 manager_id_ = self._get_userid_from_personid(self.manager_id)
                 payload["managerId"] = str(manager_id_).strip()
-            # Filter out empty values (but keep "NO_MANAGER")
+            # Filter out empty values (but keep "NO_MANAGER") KnightRider@1982!
             payload = {k: v for k, v in payload.items() if v not in ["", None]}
             return payload
         except Exception as e:
@@ -172,6 +170,16 @@ class EmploymentPayloadBuilder:
             # Use passed relationship_type or fall back to self.relationship_type
             rel_type = relationship_type
             rel_user_id_ = self._get_userid_from_personid(rel_user_id) if rel_user_id else None
+            # Compare relationship_start_date with hire_date to ensure it's not before hire_date
+            relationship_start_date_ts = int(relationship_start_date.strip("/Date()")) // 1000
+            hire_date_ts = int(self.hire_date.strip("/Date()")) // 1000
+
+            if relationship_start_date_ts < hire_date_ts:
+                Logger.warning(
+                    f"Relationship start date {relationship_start_date} is before hire date {self.hire_date} for user {self.user_id}. Using hire date as relationship start date."
+                )
+                relationship_start_date = self.hire_date
+
             # Skip if relationship_type is not configured (needs SAP picklist ID)
             if not rel_type:
                 Logger.warning(f"Skipping relationship for {self.user_id} - relationshipType not configured")

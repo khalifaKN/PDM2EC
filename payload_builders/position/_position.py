@@ -216,10 +216,12 @@ class PositionPayloadBuilder:
             )
             return None
     
-    def _get_position_uri(self, position_code):
+    def _get_position_uri(self, position_code, manager_userid: str=None):
         """Retrieve position URI using cached positions data."""
         positions_df = self.positions_df
+        Logger.info(f"Retrieving position URI for position code: {position_code} for manager USERID: {manager_userid}")
         if positions_df is not None:
+            Logger.info(f"Positions DataFrame columns: {positions_df.columns.tolist()}")
             match = positions_df[positions_df["code"] == position_code]
             if not match.empty:
                 # Try common metadata formats
@@ -238,6 +240,8 @@ class PositionPayloadBuilder:
                     if col in match.columns:
                         return match[col].values[0]
                 Logger.warning(f"No position URI found for code {position_code} - metadata column missing or unexpected format")
+            else:
+                Logger.warning(f"No matching position found for code {position_code} when retrieving URI")
         return None
 
     def get_position_data(self, position_code):
@@ -280,17 +284,18 @@ class PositionPayloadBuilder:
         
         # If not found, try from positions cache using non_missing_manager_data
         if not manager_position_code:
+            Logger.info(f"Manager position not found in employees for manager {manager_userid}, checking positions cache")
             manager_position_code = self._get_relation_position_from_context(manager_userid)
         
         # If we found the manager position code, use parentPosition
         if manager_position_code:
-            parent_uri = self._get_position_uri(manager_position_code)
+            parent_uri = self._get_position_uri(manager_position_code, manager_userid)
             if parent_uri:
                 payload["parentPosition"] = {"__metadata": {"uri": parent_uri}}
                 return
         
         # Fallback: if no position code found, use cust_Supervisor with userid
-        Logger.debug(f"No position code found for manager {manager_userid}, using cust_Supervisor fallback")
+        Logger.info(f"No position code found for manager {manager_userid}, using cust_Supervisor fallback")
         payload["cust_Supervisor"] = self._clean(manager_userid)
 
     def build_position(self, sync_pos_to_emp: bool = False, effective_start_date_=None, position_code_=None, dummy_position: str=None):

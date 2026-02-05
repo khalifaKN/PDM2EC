@@ -31,9 +31,7 @@ class PositionValidator:
             result = self.emp_data[mask]
             if not result.empty:
                 position_code = result['position'].values[0]
-                logger.info(f"Position code {position_code} found for user ID {self.user_id}.")
                 return position_code
-            logger.info(f"No position code found for user ID {self.user_id}.")
             return None
         except Exception as e:
             msg = f"Error checking position code existence for user ID {self.user_id}: {str(e)}"
@@ -83,9 +81,7 @@ class PositionValidator:
                         assigned_userid = emp_result['userid'].values[0]
                         # Check if this position is assigned to a different user
                         if assigned_userid.lower() != self.ec_user_id.lower():
-                            logger.info(
-                                f"Position code {code} is already assigned to another user ID {assigned_userid}."
-                            )
+                            pass
                     # Check if position code is assigned to another user in current batch
                     in_batch = False
                     results_df = pd.DataFrame.from_dict(
@@ -106,14 +102,9 @@ class PositionValidator:
                     ).any()
 
                     if in_batch:
-                        logger.info(
-                            f"Position code {code} is already assigned to another user in current processing batch."
-                        )
                         continue
-                    logger.info(f"Position code {code} found for user ID {self.user_id} and not assigned to another user.")
                     return code
 
-            logger.info(f"No position code found for user ID {self.user_id}.")
             return None
 
         except Exception as e:
@@ -145,7 +136,6 @@ class PositionValidator:
                 cust_subunit = result.get('cust_subunit', pd.Series([None])).values[0] if 'cust_subunit' in result.columns else None
                 cust_geoscope = result.get('cust_geographicalscope', pd.Series([None])).values[0] if 'cust_geographicalscope' in result.columns else None
                 
-                logger.info(f"Position data retrieved for code {position_code}: jobCode={job_code}, division={division}, subUnit={cust_subunit}")
                 return {
                     "job_code": job_code,
                     "cost_center": cost_center,
@@ -155,14 +145,12 @@ class PositionValidator:
                     "cust_subunit": cust_subunit,
                     "cust_geographicalscope": cust_geoscope
                 }
-            logger.info(f"No position data found for position code {position_code}.")
             return None
         except Exception as e:
             msg = f"Error retrieving position data for position code {position_code}: {str(e)}"
             if self.raise_if_missing:
                 logger.error(msg)
                 raise ValueError(msg)
-            logger.info(msg)
             return None
     
     def position_to_update_exists(self) -> bool:
@@ -180,13 +168,11 @@ class PositionValidator:
             
             # If no position code found at all, no update needed (will create new)
             if not position_code:
-                logger.info(f"No position code found for user ID {self.user_id}.")
                 return False
             
             # Now retrieve the Position entity data to validate its fields
             position_data = self._retrieve_position_data(position_code)
             if not position_data:
-                logger.info(f"No position data retrieved for position code {position_code} for user ID {self.user_id}.")
                 return False
             
             job_code = position_data.get('job_code')
@@ -206,7 +192,6 @@ class PositionValidator:
             # Check if jobCode is missing in SAP Position (critical!)
             if not job_code or str(job_code).strip() in ['', 'None', 'null']:
                 needs_update = True
-                logger.info(f"Position code {position_code} is missing jobCode for user ID {self.user_id}.")
             
             # Check basic field changes
             if position_data and (
@@ -216,26 +201,20 @@ class PositionValidator:
                 (self.record.get('jobcode') and job_code and str(self.record.get('jobcode')).lower() != str(job_code).lower())
             ):
                 needs_update = True
-                logger.info(f"Position code {position_code} has field changes for user ID {self.user_id}.")
             
             # Check if organizational fields are missing in SAP
             if not division or str(division).strip() in ['', 'None', 'null']:
                 needs_update = True
-                logger.info(f"Position code {position_code} is missing division (HR BU/FU) for user ID {self.user_id}.")
             
             if not cust_subunit or str(cust_subunit).strip() in ['', 'None', 'null']:
                 needs_update = True
-                logger.info(f"Position code {position_code} is missing cust_subUnit for user ID {self.user_id}.")
             
             if not cust_geoscope or str(cust_geoscope).strip() in ['', 'None', 'null']:
                 needs_update = True
-                logger.info(f"Position code {position_code} is missing cust_geographicalScope for user ID {self.user_id}.")
             
             if needs_update:
-                logger.info(f"Position code {position_code} needs to be updated for user ID {self.user_id}.")
                 return True
             
-            logger.info(f"No position update needed for user ID {self.user_id}.")
             return False
         except Exception as e:
             msg = f"Error checking position update existence for user ID {self.user_id}: {str(e)}"
@@ -257,7 +236,6 @@ class PositionValidator:
             if self.raise_if_missing:
                 logger.error(msg)
                 raise ValueError(msg)
-            logger.info(msg)
+            logger.error(msg)
             return False
-        logger.info(f"All required fields are present for user ID {self.user_id}.")
         return True

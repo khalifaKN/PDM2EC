@@ -33,6 +33,7 @@ The next will be added:
 
 from mapper.retrieve_person_id_external import get_userid_from_personid
 from orchestrator.user_context import UserExecutionContext
+from payload_builders.person._person import PersonPayloadBuilder
 from utils.logger import get_logger
 from api.auth_client import AuthAPI
 from api.api_client import APIClient
@@ -48,6 +49,8 @@ from migration.migration_processing import MigrationProcessor
 
 import pandas as pd
 
+from validator.person.person_validator import PersonValidator
+
 Logger = get_logger("migration_inactive_emp_processing")
 
 
@@ -62,7 +65,6 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
         ("PerPerson", "perperson"),
         ("EmpEmployment", "empemployment"),
         ("EmpInitLoadJob", "empinitloadjob"),
-        ("EmpJob", "empjob"),
         ("PerPersonal", "perpersonal"),
         ("EmpEmploymentTermination", "empemploymenttermination"),
     ]
@@ -72,7 +74,6 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
         "PerPersonal": ["PerPerson"],
         "EmpEmployment": ["Position", "PerPerson"],
         "EmpInitLoadJob": ["Position", "PerPerson"],
-        "EmpJob": ["Position", "PerPerson"],
         "EmpEmploymentTermination": ["EmpEmployment", "PerPerson"],
     }
 
@@ -118,7 +119,6 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
             "PerPerson": {},
             "EmpEmployment": {},
             "EmpInitLoadJob": {},
-            "EmpJob": {},
             "PerPersonal": {},
             "EmpEmploymentTermination": {},
         }
@@ -210,13 +210,13 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
             ctx.has_existing_empjob = self._has_existing_empjob(
                 user_id, ctx.ec_user_id, ctx.dummy_position
             )
-            Logger.info(
-                f"User {user_id} has existing EmpJob: {ctx.has_existing_empjob}"
-            )
-            # POSITION
-            self._handle_position(row, ctx, results)
-            if ctx.has_errors:
+            
+            if ctx.has_existing_empjob:
+                Logger.error(
+                    f"User {user_id} already has existing EmpJob. Skipping inactive employee processing."
+                )
                 return
+
             # PERSON
             Logger.info(f"About to call _handle_person for user {user_id}")
             self._handle_person(row, ctx)
@@ -235,40 +235,124 @@ class MigrationInactiveEmpProcessor(MigrationProcessor):
             self._handle_employment(row, ctx, results)
             if ctx.has_errors:
                 return
-            self
-        except Exception as e:
-            ctx.fail(f"Error processing user {ctx.user_id}: {e}")
-    def _build_update_payloads(
-        self, row: pd.Series, ctx: UserExecutionContext, results: dict
-    ):
-        """
-        Build update payloads for inactive employee during migration.
-        The payloads include:
-        - Historical Position (Dummy Position)
-        - PerPerson
-        - EmpEmployment
-        - EmpJob (InitLoad only)
-        - PerPersonal
-        - Termination
-        """
-        try:
-            user_id = ctx.user_id
-            Logger.info(f"Building update payloads for inactive user {user_id}")
-            # POSITION (Historical Dummy Position)
-            self._handle_position(row, ctx, results)
-            if ctx.has_errors:
-                return
-            # PERSON
-            self._handle_person(row, ctx)
-            if ctx.has_errors:
-                return
-            # EMPLOYMENT
-            self._handle_employment(row, ctx, results, is_update=True)
-            if ctx.has_errors:
-                return
-            # EMPLOYMENT TERMINATION
             self._handle_employment_termination(row, ctx)
             if ctx.has_errors:
                 return
         except Exception as e:
-            ctx.fail(f"Error building update payloads for user {ctx.user_id}: {e}")
+            ctx.fail(f"Error processing user {ctx.user_id}: {e}")
+    
+    def _handle_person(self, row: pd.Series, ctx: UserExecutionContext):
+        """
+        Build PerPerson, PerPersonal, PerEmail, and PerPhone payloads for the user.
+        Steps:
+        1. Validate required fields.
+        2. Check if personIdExternal already exists.
+        3. Build payloads using PersonPayloadBuilder.
+        4. Add payloads to context.
+        """
+        try:
+            user_id = ctx.user_id
+            person_validator = PersonValidator(
+                record=row,
+                required_fields=[
+                    "firstname",
+                    "lastname",
+                    "userid",
+                    "date_of_birth",
+                    "date_of_position",
+                    "email",
+                ],
+                person_df=self.sap_cache.get("perperson_df"),
+            )
+
+            if not person_validator.validate_required_fields():
+                missing = getattr(person_validator, "missing_fields", None)
+                details = f" Missing fields: {', '.join(missing)}" if missing else ""
+                ctx.fail(
+                    f"Missing required fields for person creation for user {user_id}.{details}"
+                )
+                return
+
+            if person_validator.personid_exists():
+                ctx.errors.append(
+                    f"Person with personIdExternal {user_id} already exists."
+                )
+                Logger.error(
+                    f"Person with personIdExternal {user_id} already exists."
+                )
+                return
+
+            fields_to_check = [
+                "firstname",
+                "lastname",
+                "date_of_birth",
+                "date_of_position",
+                "email",
+                "private_email",
+                "gender",
+                "phone",
+            ]
+            # Check for changes to avoid unnecessary payload building
+            # Only skip if person already exists AND no changes detected
+            if (
+                person_validator.personid_exists()
+                and not person_validator.check_changes(fields_to_check)
+            ):
+                Logger.info(
+                    f"No changes detected for person {user_id}, skipping payload building"
+                )
+                # Mark person as SUCCESS since it already exists and is up-to-date
+                ctx.runtime["entity_status"]["PerPerson"] = "SUCCESS"
+                return
+
+            Logger.info(f"Building person payloads for user {user_id}")
+
+            # Use start_of_employment (hire date) for PerPersonal, not date_of_position
+            # SAP requires PerPersonal startDate to match the employment relationship record
+            employment_start_date = (
+                row.get("start_of_employment")
+                or row.get("hiredate")
+                or row.get("date_of_position")
+            )
+
+            person_builder = PersonPayloadBuilder(
+                first_name=row["firstname"],
+                last_name=row["lastname"],
+                person_id_external=user_id,
+                date_of_birth=row["date_of_birth"],
+                start_date=employment_start_date,
+                email=row["email"],
+                nickname=row.get("nickname", None),
+                middle_name=row.get("mi", None),
+                private_email=row.get("private_email", None),
+                gender=row.get("gender", None),
+                phone=row.get("phone", None),
+                postgres_cache=self.postgres_cache,
+            )
+            # PerPerson payload
+            Logger.info(f"Building PerPerson payload for user {user_id}")
+            perperson_payload = person_builder.build_perperson_payload()
+            if not perperson_payload:
+                err = getattr(person_builder, "last_error", None)
+                extra = f" Builder error: {err}" if err else ""
+                ctx.fail(
+                    f"Failed to build perperson payload for user {user_id}.{extra}"
+                )
+                return
+            ctx.payloads["perperson"] = perperson_payload
+            Logger.info(f"✓ PerPerson payload built for user {user_id}")
+
+            # PerPersonal payload
+            Logger.info(f"Building PerPersonal payload for user {user_id}")
+            perpersonal_payload = person_builder.build_perpersonal_payload()
+            if not perpersonal_payload:
+                err = getattr(person_builder, "last_error", None)
+                extra = f" Builder error: {err}" if err else ""
+                ctx.fail(
+                    f"Failed to build perpersonal payload for user {user_id}.{extra}"
+                )
+                return
+            ctx.payloads["perpersonal"] = perpersonal_payload
+            Logger.info(f"✓ PerPersonal payload built for user {user_id}")
+        except Exception as e:
+            ctx.fail(f"Error building person payloads for user {ctx.user_id}: {e}")

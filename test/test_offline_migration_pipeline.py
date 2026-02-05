@@ -52,7 +52,7 @@ from config.tables_names import (
     migration_field_changes_tables,
     migration_pipeline_summary_tables
 )
-from migration.migration_processing import MigrationProcessor
+from migration.migration_offline_processing import MigrationProcessorOffline
 from orchestrator.disable_ec_users_processing import DisableUsersProcessor
 from orchestrator.notification_processing import NotificationHandler
 from cache.postgres_cache import PostgresDataCache
@@ -355,7 +355,7 @@ def process_new_employees(new_employees_df, batches, summary):
     # For now, using empty dict - update based on your migration requirements
     job_code = 'T00001'
     
-    migration_processor = MigrationProcessor(
+    migration_processor = MigrationProcessorOffline(
         auth_url=auth_endpoint,
         base_url=base_url,
         auth_credentials=auth_credentials,
@@ -557,9 +557,9 @@ def process_field_updates(field_changes_df):
     logger.info("STEP 9: Processing field updates for existing employees")
     logger.info("=" * 80)
     
-    # Initialize MigrationProcessor (can reuse existing instance or create new one)
+    # Initialize MigrationProcessorOffline (can reuse existing instance or create new one)
     job_code = 'T00001'
-    migration_processor = MigrationProcessor(
+    migration_processor = MigrationProcessorOffline(
         auth_url=auth_endpoint,
         base_url=base_url,
         auth_credentials=auth_credentials,
@@ -846,7 +846,7 @@ if __name__ == "__main__":
             
                 # Initialize temp_processor for history extraction
                 job_code = 'T00001'
-                temp_processor = MigrationProcessor(
+                temp_processor = MigrationProcessorOffline(
                     auth_url=auth_endpoint,
                     base_url=base_url,
                     auth_credentials=auth_credentials,

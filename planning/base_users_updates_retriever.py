@@ -1,6 +1,9 @@
 from loader.bulk_insert_employee_field_changes import BulkInsertEmployeeFieldChanges
 from cache.employees_cache import EmployeesDataCache
+from cache.oracle_cache import OracleDataCache
+from cache.sap_cache import SAPDataCache
 from planning.field_change_data import FieldChange
+from planning.email_resolver import EmailResolver
 from typing import Callable, Iterator
 from validator.person.email_validator import EmailValidator
 from utils.logger import get_logger
@@ -20,7 +23,7 @@ class BaseUsersUpdatesRetriever:
     Functions:
         persist_changes_chunked: Persists changes in chunks using a provided generator.
     """
-    def __init__(self, pdm_data, ec_data, user_ids, postgres_connector, table_names, chunk_size=1000, sap_email_data=None, run_id=None, batch_context=None):
+    def __init__(self, pdm_data, ec_data, user_ids, postgres_connector, table_names,sap_email_data, chunk_size=1000, run_id=None, batch_context=None):
         self.pdm_data = pdm_data.copy()
         self.ec_data = ec_data.copy()
         self.user_ids = set(user_ids)
@@ -32,6 +35,14 @@ class BaseUsersUpdatesRetriever:
         self.batch_context = batch_context  # Description of batch (e.g., 'SCM/IM Users')
         self.employees_cache = EmployeesDataCache()
         self.table_names = table_names
+        self.oracle_cache = OracleDataCache()
+        self.sap_cache = SAPDataCache()
+        self.hr_global_users = set(
+            pdm_data[
+                pdm_data['division'].str.lower() == 'human resources'
+            ]['userid'].astype(str).str.lower()
+        )
+        self.sap_email_data_ = self.sap_cache.get('peremail_df')
         
         # Normalize SAP email data column names to lowercase for EmailValidator
         if sap_email_data is not None and not sap_email_data.empty:
@@ -50,7 +61,18 @@ class BaseUsersUpdatesRetriever:
             self.sap_email_data = email_data_copy
         else:
             self.sap_email_data = pd.DataFrame()
-    
+    def _retrieve_vaild_email_users_ids(self):
+        """
+        Retrieves users ids that their email in SAP is not anonymized (not ending with @kn.com).
+        Returns:
+            set: Set of user IDs with valid (non-anonymized) emails in SAP.
+        """
+        sap_email_data = self.sap_email_data_
+        valid_email_users = sap_email_data[
+            ~sap_email_data['emailaddress'].str.lower().str.endswith('@kn.com', na=False)
+        ]['personidexternal'].astype(str).str.lower()
+        return set(valid_email_users)
+
     def _initialize_batch(self):
         """
         Initializes a new batch for tracking changes using a unique batch ID.
@@ -94,10 +116,14 @@ class BaseUsersUpdatesRetriever:
         df = pd.DataFrame(
             [change for changes in all_changes_by_user.values() for change in changes]
         )
+        if not df.empty:
+            df["ec_value"] = df["ec_value"].astype("string")
+            df["pdm_value"] = df["pdm_value"].astype("string")
+            df["field_name"] = df["field_name"].astype("string")
+            df["userid"] = df["userid"].astype("string")
+            df["batch_id"] = df["batch_id"].astype("string")
         self.employees_cache.set(cache_key, df)
-        Logger.info(f"Persisted {len(changed_users)} users in batch {self.batch_id}")
         self._update_batch_stats(len(changed_users))
-        Logger.info(f"Completed processing batch {self.batch_id}")
 
     def _update_batch_stats(self, users_with_changes: int):
         """
@@ -119,7 +145,6 @@ class BaseUsersUpdatesRetriever:
             cursor = connection.cursor()
             cursor.execute(update_query, (users_with_changes, self.batch_id))
             connection.commit()
-            Logger.info(f"Updated batch {self.batch_id} stats: {users_with_changes} users with changes.")
             cursor.close()
         except Exception as e:
             Logger.error(f"Failed to update batch stats: {e}")
@@ -140,8 +165,18 @@ class BaseUsersUpdatesRetriever:
         Controls email updates by validating and deciding necessary actions using EmailValidator.
         Yields FieldChange objects for each action.
         """
+
+        if userid not in self._retrieve_vaild_email_users_ids():
+            return  
+
+        resolver = EmailResolver()
+        
+        resolved = resolver.resolve_user_email(userid=userid,pdm_row= pdm_row, hr_global_users=self.hr_global_users, sap_email_data=self.sap_email_data_)
+        safe_row = pdm_row.copy()
+        safe_row["email"] = resolved["business_email"]
+        safe_row["private_email"] = resolved["private_email"]
         validator = EmailValidator(
-            record=pdm_row,
+            record=safe_row,
             email_data=self.sap_email_data,
             userid=userid
         )
@@ -217,5 +252,5 @@ class BaseUsersUpdatesRetriever:
                 is_scm_user=is_scm_user,
                 is_im_user=is_im_user
             )
-
-
+    
+    

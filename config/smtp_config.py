@@ -4,4 +4,3 @@ SMTP_CONFIG = {
     'use_tls': False,  # Port 25 typically doesn't support STARTTLS
     'from_email': 'global.hris.integrations@kuehne-nagel.com'
 }
-

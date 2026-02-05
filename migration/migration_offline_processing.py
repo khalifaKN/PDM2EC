@@ -57,20 +57,19 @@ from cache.oracle_cache import OracleDataCache
 from cache.sap_cache import SAPDataCache
 from cache.employees_cache import EmployeesDataCache
 from orchestrator.core_processing import CoreProcessor
-from payload_builders.position._dummy_position import DummyPositionPayloadBuilder
 from payload_builders.employment._employment import EmploymentPayloadBuilder
 from payload_builders.position._position import PositionPayloadBuilder
 
+from validator.employment.job_validator import JobExistenceValidator
 from validator.position.position_validator import PositionValidator
 from utils.date_converter import convert_to_unix_timestamp
-import json
-
+import secrets
 import pandas as pd
 
-Logger = get_logger("migration_processing")
+Logger = get_logger("offline_migration_processing")
 
 
-class MigrationProcessor(CoreProcessor):
+class MigrationProcessorOffline(CoreProcessor):
     """
     Processor class to handle bulk migration of PDM Users.
     Extends CoreProcessor to implement migration-specific logic.
@@ -170,118 +169,10 @@ class MigrationProcessor(CoreProcessor):
         self.sap_email_data = self.sap_cache.get('peremail_df')
     def _create_or_get_dummy_position(self, ctx: UserExecutionContext):
         """
-        Creates or retrieves a dummy position for the given country and company.
-        This dummy position is used for migrating users before their actual position is created.
-        """
-        try:
-            if not self.job_code or pd.isna(self.job_code):
-                raise ValueError("Jobcode is required to get or create dummy position.")
-
-            row = ctx.runtime.get("original_row")
-            if row is None:
-                ctx.fail(
-                    "Original row data not found in context for dummy position creation."
-                )
-                return None
-
-            company = row.get("company")
-
-            # get positions from cache
-            positions_df = self.sap_cache.get(self.positions_cache_key)
-
-            if positions_df is not None:
-                filtered = positions_df[
-                    (positions_df["company"] == company)
-                    & (positions_df["jobcode"] == self.job_code)
-                ]
-                if not filtered.empty:
-                    position_code = filtered.iloc[0]["code"]
-                    ctx.dummy_position = position_code
-                    return position_code
-
-            # Create dummy position if not exists
-            job_titles_data = self.postgres_cache.get("jobs_titles_data_df")
-            if job_titles_data is None:
-                raise ValueError(
-                    "Job Titles cache is missing. Cannot create dummy position."
-                )
-
-            job_data_filtered = job_titles_data[
-                job_titles_data["jobcode"] == self.job_code
-            ]
-
-            if job_data_filtered.empty:
-                # Build job_data_filtered with static/default values if needed
-                job_data_filtered = pd.DataFrame(
-                    [
-                        {
-                            "bufu_id": "2764",
-                            "cust_geographicalscope": "2924",
-                            "cust_subunit": "2926",
-                        }
-                    ]
-                )
-
-            dummy_position_data = {
-                "company": company,
-                "cost_center": row.get("cost_center"),
-                "country_code": row.get("country_code"),
-                "bufu_id": job_data_filtered["bufu_id"].values[0],
-                "jobcode": self.job_code,
-                "address_code": row.get("address_code"),
-                "cust_geographicalscope": job_data_filtered[
-                    "cust_geographicalscope"
-                ].values[0],
-                "cust_subunit": job_data_filtered["cust_subunit"].values[0],
-            }
-            # Initialize builder and build payload
-            builder = DummyPositionPayloadBuilder(dummy_position_data)
-            payload = builder.build_dummy_position_payload()
-
-            # Log dummy position payload for visibility
-            Logger.info(
-                f"Creating dummy position for company {company}, jobcode {self.job_code}"
-            )
-            # Log the payload in a readable format
-            Logger.info(f"Dummy Position Payload: {json.dumps(payload, indent=2)}")
-
-            # Upsert dummy position
-            response = self.upsert_client.upsert_entity(
-                entity_name="Dummy Position",
-                payload=payload,
-            )
-            # Retrieve position code from response
-            position_key = response.get("key")
-            if not position_key:
-                raise ValueError(
-                    f"Failed to create dummy position for company {company} "
-                    f"and jobcode {self.job_code}. Response: {response}"
-                )
-
-            # Example:
-            # "Position/code=1020018,Position/effectiveStartDate=2025-09-29T00:00:00.000Z"
-            position_code = position_key.split(",")[0].split("=")[1]
-
-            # Update cache: put the new dummy position in the positions cache with minimal info
-            new_entry = pd.DataFrame(
-                [{"code": position_code, "company": company, "jobcode": self.job_code}]
-            )
-
-            updated_cache = (
-                pd.concat([positions_df, new_entry], ignore_index=True)
-                if positions_df is not None
-                else new_entry
-            )
-
-            self.sap_cache.set(self.positions_cache_key, updated_cache)
-            # Set dummy position in context
-            ctx.dummy_position = position_code
-            return position_code
-
-        except Exception as e:
-            raise RuntimeError(
-                f"Error in _create_or_get_dummy_position for jobcode {self.job_code}: {e}"
-            ) from e
+        Mocking the creation or retrieval of a dummy position for the user.
+        Return hard coded dummy position for demonstration."""
+        return "DUMMY_POSITION_001"
+         
 
     def _has_existing_empjob(
         self, user_id: str, ec_user_id: str, dummy_position: str
@@ -301,6 +192,7 @@ class MigrationProcessor(CoreProcessor):
                     empjob_data["userid"].astype(str).str.lower().eq(ec_user_id.lower())
                 )
                 result = empjob_data[mask & (empjob_data["position"] != dummy_position)]
+
                 return not result.empty
             return False
         except Exception as e:
@@ -330,7 +222,8 @@ class MigrationProcessor(CoreProcessor):
             # CREATE OR GET DUMMY POSITION AND ASSIGN TO USER CONTEXT TO BE USED IN EMPLOYMENT PROCESSING
 
 
-            self._create_or_get_dummy_position(ctx)
+            dummy_position = self._create_or_get_dummy_position(ctx)
+            ctx.dummy_position = dummy_position
             if not ctx.dummy_position:
                 ctx.fail("Failed to create or retrieve dummy position")
                 return
@@ -358,9 +251,6 @@ class MigrationProcessor(CoreProcessor):
             # User Role updates
             self._handle_ep_ec_roles(row, ctx)
             if ctx.has_errors:
-                Logger.error(
-                    f"Early return after UserRoles handling for {user_id} due to errors: {ctx.errors}"
-                )
                 return
 
             # EMPLOYMENT
@@ -373,16 +263,10 @@ class MigrationProcessor(CoreProcessor):
             if position_builder:
                 self._handle_position_matrix_relationship(row, ctx, position_builder)
                 if ctx.has_errors:
-                    Logger.error(
-                        f"Early return after position matrix for {user_id} due to errors: {ctx.errors}"
-                    )
                     return
             else:
                 ctx.warn(
                     "Position builder not initialized for PositionMatrixRelationships"
-                )
-                Logger.warning(
-                    f"No Position builder for user {user_id} (position already exists), skipping PositionMatrixRelationships"
                 )
 
             # Skip relationships if waiting for position lookup
@@ -398,6 +282,100 @@ class MigrationProcessor(CoreProcessor):
         except Exception as e:
             ctx.fail(f"Error processing user {ctx.user_id}: {e}")
 
+    def _handle_position(
+        self, row: pd.Series, ctx: UserExecutionContext, results: dict
+    ):
+        try:
+            user_id = ctx.user_id
+
+            position_validator = PositionValidator(
+                record=row,
+                pos_data=self.sap_cache.get("positions_df"),
+                emp_data=self.sap_cache.get("employees_df"),
+                user_id=user_id,
+                ec_user_id=ctx.ec_user_id,
+                results=results,
+                required_fields=PositionPayloadBuilder.REQUIRED_FIELDS,
+            )
+
+            if not position_validator.validate_required_fields():
+                missing = getattr(position_validator, "missing_fields", None)
+                details = f" Missing fields: {', '.join(missing)}" if missing else ""
+                ctx.fail(
+                    f"Missing required fields for position creation for user {user_id}.{details}"
+                )
+                return
+
+            # Check if position exists for this user (in employees table)
+            existing_position_code_in_employees = (
+                position_validator.position_code_exists_in_employees()
+            )
+            # Check if position exists for this user (in positions table)
+            existing_position_code_in_positions = (
+                position_validator.position_code_exists_in_positions()
+            )
+
+            # Get job mappings for builder creation
+            job_validator = JobExistenceValidator(
+                job_mappings=self.postgres_cache.get("jobs_titles_data_df"),
+                job_code=row["jobcode"],
+            )
+
+            job_mapping = job_validator.get_job_mapping()
+            if job_mapping.empty:
+                ctx.fail(f"Job code {row['jobcode']} does not exist for user {user_id}")
+                return
+
+            # Always create position builder (needed for PositionMatrixRelationships)
+            position_builder = PositionPayloadBuilder(
+                record=row,
+                job_mappings=job_mapping,
+                is_scm=False,
+                results=results,
+                ec_user_id=ctx.ec_user_id,
+            )
+            ctx.builders["position"] = position_builder
+
+            # Only create payload if position doesn't exist
+            if (
+                existing_position_code_in_employees
+                or existing_position_code_in_positions
+            ):
+                # Mark position as SUCCESS since it already exists (no action needed)
+                ctx.runtime["entity_status"]["Position"] = "SUCCESS"
+
+                # Store existing position code for employment processing
+                ctx.position_code = (
+                    existing_position_code_in_employees
+                    or existing_position_code_in_positions
+                )
+                # Don't return - continue processing employment and relationships
+            else:
+                # Position doesn't exist, create payload
+
+                payload = position_builder.build_position()
+                if not payload:
+                    # include builder diagnostic if available
+                    builder_err = getattr(position_builder, "last_error", None)
+                    extra = f" Builder error: {builder_err}" if builder_err else ""
+                    error_details = f"Failed to build position payload for user {user_id}. Check record fields: jobcode={row.get('jobcode')}, manager={row.get('manager')}, company={row.get('company')},cost_center={row.get('cost_center')},country_code={row.get('country_code')}.{extra}"
+                    Logger.error(error_details)
+                    ctx.fail(error_details)
+                    return
+
+                ctx.payloads["position"] = payload
+                # Store that we're creating a position (employment handler will need to derive position code)
+                # For mocking process in offline without calling EC APIs, we'll set a random value as position code in User Context
+                ctx.position_code = f"POS_{secrets.token_hex(4).upper()}"
+                ctx.runtime["position_being_created"] = True
+                ctx.runtime["position_record"] = (
+                    row  # Store row data for position lookup
+                )
+        except Exception as e:
+            error_msg = f"Error building position payload for user {ctx.user_id}: {e}"
+            Logger.error(error_msg, exc_info=True)
+            ctx.fail(error_msg)
+
     def _handle_employment(
         self, row: pd.Series, ctx: UserExecutionContext, results: dict, is_update: bool = False
     ):
@@ -406,6 +384,7 @@ class MigrationProcessor(CoreProcessor):
         """
         try:
             user_id = ctx.user_id
+
             if is_update:
                 for entity in ["EmpEmployment", "EmpJob"]:
                     # Check if Dependencies not in dirty entities, we put it as SUCCESS To proceed the retry after creating position
@@ -538,7 +517,7 @@ class MigrationProcessor(CoreProcessor):
         elif ctx.runtime.get("position_payload_built"):
             return None
         else:
-            ctx.fail(
+            ctx.warn(
                 f"Position code not found for user {user_id}, and no position payload built. Cannot resolve position."
             )
             return None
@@ -561,6 +540,7 @@ class MigrationProcessor(CoreProcessor):
         user_id = ctx.user_id
         dirty_entities = ctx.dirty_entities
         ctx.ec_user_id = get_userid_from_personid(user_id)
+
         # Get or Create dummy position if needed
         dummy_position = self._create_or_get_dummy_position(ctx)
         if not dummy_position:
@@ -573,6 +553,7 @@ class MigrationProcessor(CoreProcessor):
         ctx.has_existing_empjob = self._has_existing_empjob(
             user_id, ec_user_id=ctx.ec_user_id, dummy_position=dummy_position
         )
+
         # Position updates
         self._build_position_update(row, ctx, results, dummy_position=dummy_position)
 
@@ -613,6 +594,7 @@ class MigrationProcessor(CoreProcessor):
         """
         try:
             user_id = ctx.user_id
+
             # Get existing position code from employees cache
             has_position = False
             employees_df = self.sap_cache.get("employees_df")
@@ -632,9 +614,6 @@ class MigrationProcessor(CoreProcessor):
                     if existing_position and existing_position != dummy_position:
                         has_position = True
                         ctx.position_code = existing_position
-                        Logger.info(
-                            f"Found existing position code {existing_position} for user {user_id}"
-                        )
 
             # Validate required fields
             required_fields = [
@@ -659,6 +638,7 @@ class MigrationProcessor(CoreProcessor):
             job_match = job_mappings[job_mappings["jobcode"] == job_code]
 
             if job_match.empty:
+                Logger.error(f"No job mapping found for jobcode {job_code}")
                 ctx.fail(f"No job mapping found for jobcode {job_code}")
                 return
 
@@ -702,7 +682,101 @@ class MigrationProcessor(CoreProcessor):
             ctx.payloads["position"] = position_payload
             ctx.builders["position"] = position_builder
             ctx.runtime["position_payload_built"] = True
-
+            # Mock processing - We'll set random position code as if created
+            if not ctx.position_code:
+                ctx.position_code = f"POS_{secrets.token_hex(4).upper()}"
 
         except Exception as e:
             ctx.fail(f"Error building position update for user {ctx.user_id}: {e}")
+            Logger.error(f"Error building position update for user {ctx.user_id}: {e}")
+    
+    def _execute_batch_upserts(self, results, batch_user_ids):
+        """
+        Execute batched upserts per entity (SAP-compliant).
+        Refresh caches for Position and EmpJob after upserts.
+        Args:
+            results (Dict[str, UserExecutionContext]): Mapping of user_id to their execution context.
+        """
+        try:
+            for entity_name, _ in self.EXECUTION_PLAN:
+                payloads_per_user = self.collected_payloads.get(entity_name)
+                if not payloads_per_user:
+                    continue
+                # Sync Position to Job after EmpJob success (triggers SAP PositionToJobInfoSyncRule)
+                if entity_name == "EmpJob":
+                    Logger.info("=" * 120)
+                    Logger.info(
+                        "POSITION-TO-JOB SYNC OPERATION (Not a Position creation/update)"
+                    )
+                    Logger.info("=" * 120)
+
+                    position_sync_payloads = {}
+                    for user_id, ctx in results.items():
+                        # Only sync for users with successful Position AND EmpJob creation
+                        if (
+                            user_id in batch_user_ids
+                            and ctx.runtime.get("entity_status", {}).get("EmpJob")
+                            == "SUCCESS"
+                            and not ctx.has_errors
+                            and ctx.position_code
+                            and ctx.empjob_start_date
+                        ):
+                            row = ctx.runtime.get("original_row")
+                            position_builder = ctx.builders.get("position")
+
+                            if position_builder is None:
+                                if row is None:
+                                    ctx.fail(
+                                        f"No original_row  and position_builder found for user {user_id} during Position sync"
+                                    )
+                                    continue
+                                job_validator = JobExistenceValidator(
+                                    job_mappings=self.postgres_cache.get(
+                                        "jobs_titles_data_df"
+                                    ),
+                                    job_code=row["jobcode"],
+                                )
+
+                                job_mapping = job_validator.get_job_mapping()
+                                if job_mapping.empty:
+
+                                    ctx.fail(
+                                        f"Job code {row['jobcode']} does not exist for user {user_id} during Position sync"
+                                    )
+                                    continue
+                                position_builder = PositionPayloadBuilder(
+                                    record=row,
+                                    job_mappings=job_mapping,
+                                    results=results,
+                                    ec_user_id=ctx.ec_user_id,
+                                )
+
+                            # Build Position payload with sync_pos_to_emp=True
+                            sync_payload = position_builder.build_position(
+                                sync_pos_to_emp=True,
+                                effective_start_date_=ctx.empjob_start_date,
+                                position_code_=ctx.position_code,
+                            )
+
+                            if sync_payload:
+                                # Store in ctx.payloads for history tracking (payload_snapshot)
+                                ctx.payloads["position_sync"] = sync_payload
+                                position_sync_payloads[user_id] = [sync_payload]
+                            else:
+                                ctx.fail(
+                                    f"[POSITION SYNC] Failed to build sync payload for user {user_id}"
+                                )
+
+                for _, ctx in results.items():
+                    if (
+                        ctx.runtime.get("entity_status", {}).get(entity_name)
+                        == "PENDING"
+                    ):
+                        ctx.runtime["entity_status"][entity_name] = "SUCCESS"
+
+            # Log summary grouped by user
+            self._log_batch_summary_by_user(results)
+
+        except Exception as e:
+            Logger.error(f"Fatal error during batch upserts: {e}")
+            raise

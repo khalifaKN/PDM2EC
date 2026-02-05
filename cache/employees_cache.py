@@ -1,55 +1,115 @@
+import os
+import pandas as pd
+from threading import Lock
 from utils.logger import get_logger
 
-Logger= get_logger('employees_data_cache')
+Logger = get_logger("employees_cache")
 
 class EmployeesDataCache:
     """
-    A simple in-memory cache for employees data.
+    Singleton cache for Employees data.
+    Loads parquet files once per process/DAG task and keeps DataFrames in memory.
     """
-    # Class-level cache shared across all instances
-    _cache = {}
-
+    _instance = None
+    _lock = Lock()
+    _data = {}
+    _initialized = False
+    
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                # Double-check locking pattern
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+    
     def __init__(self):
-        pass
-    @classmethod
-    def get(cls, key):
+        # Only initialize once
+        if not EmployeesDataCache._initialized:
+            with EmployeesDataCache._lock:
+                if not EmployeesDataCache._initialized:
+                    Logger.info("Initializing EmployeesDataCache singleton")
+                    self._cache_dir = "./cache/employees_data"
+                    EmployeesDataCache._initialized = True
+    
+    def get(self, key: str) -> pd.DataFrame:
         """
-        Retrieves data from the cache.
-
+        Get DataFrame from cache. Load from parquet if not in memory.
+        
         Args:
-            key (str): The key to look up in the cache. 
+            key: Cache key (e.g., 'positions_df', 'employees_df')
+            
         Returns:
-            The cached data if present, else None.
+            DataFrame or None if not found
         """
-        return cls._cache.get(key, None)
+        # Check if already loaded in memory
+        if key in EmployeesDataCache._data:
+            Logger.debug(f"Cache HIT for {key} (using in-memory data)")
+            return EmployeesDataCache._data[key]
+        
+        # Load from parquet (thread-safe)
+        with EmployeesDataCache._lock:
+            # Double-check after acquiring lock
+            if key in EmployeesDataCache._data:
+                return EmployeesDataCache._data[key]
+            
+            Logger.info(f"Cache MISS for {key} - loading from parquet")
+            df = self._load_from_parquet(key)
+            
+            if df is not None:
+                EmployeesDataCache._data[key] = df
+                Logger.info(f"Loaded {key}: {len(df)} rows, {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB")
+            
+            return df
+    
+    def _load_from_parquet(self, key: str) -> pd.DataFrame:
+        """Load DataFrame from parquet file."""
+        try:
+            file_path = os.path.join(self._cache_dir, f"{key}.parquet")
+            
+            if not os.path.exists(file_path):
+                Logger.warning(f"Parquet file not found: {file_path}")
+                return None
+            
+            df = pd.read_parquet(file_path)
+            return df
+            
+        except Exception as e:
+            Logger.error(f"Error loading {key} from parquet: {e}")
+            return None
+    
+    def set(self, key: str, df: pd.DataFrame):
+        """
+        Save DataFrame to cache (both memory and parquet).
+        
+        Args:
+            key: Cache key
+            df: DataFrame to cache
+        """
+        with EmployeesDataCache._lock:
+            # Save to memory
+            EmployeesDataCache._data[key] = df
+            
+            # Save to parquet
+            try:
+                os.makedirs(self._cache_dir, exist_ok=True)
+                file_path = os.path.join(self._cache_dir, f"{key}.parquet")
+                df.to_parquet(file_path, index=False, compression='snappy')
+                Logger.info(f"Saved {key} to cache: {len(df)} rows")
+            except Exception as e:
+                Logger.error(f"Error saving {key} to parquet: {e}")
+    
+    def clear(self):
+        """Clear in-memory cache (useful for testing or memory management)."""
+        with EmployeesDataCache._lock:
+            EmployeesDataCache._data.clear()
+            Logger.info("Cleared in-memory cache")
     
     @classmethod
-    def set(cls, key, value):
-        """
-        Stores data in the cache.
-
-        Args:
-            key (str): The key under which to store the data.
-            value: The data to store in the cache.
-        """
-        cls._cache[key] = value
-        Logger.info(f"Data cached under key: {key}")
-    @classmethod
-    def clear(cls):
-        """ Clears the entire cache. """
-        cls._cache.clear()
-        Logger.info("Employees data cache cleared.")
-
-    @classmethod
-    def clear_key(cls, key):
-        """
-        Clears a specific key from the cache.
-
-        Args:
-            key (str): The key to remove from the cache.
-        """
-        if key in cls._cache:
-            del cls._cache[key]
-            Logger.info(f"Cache cleared for key: {key}")
-        else:
-            Logger.warning(f"Key: {key} not found in cache.")
+    def reset_singleton(cls):
+        """Reset singleton instance (useful for testing)."""
+        with cls._lock:
+            cls._instance = None
+            cls._data.clear()
+            cls._initialized = False
+            Logger.info("Reset EmployeesDataCache singleton")

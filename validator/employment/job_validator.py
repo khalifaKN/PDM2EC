@@ -32,7 +32,6 @@ class JobExistenceValidator:
             if self.raise_if_missing:
                 logger.error(msg)
                 raise ValueError(msg)
-            logger.info(msg)
         # Check if required fields exist and have no NaN values
         missing_fields = [field for field in self.requested_fields if field not in result.columns or result[field].isna().any()]
         if missing_fields:
@@ -40,9 +39,7 @@ class JobExistenceValidator:
             if self.raise_if_missing:
                 logger.error(msg)
                 raise ValueError(msg)
-            logger.info(msg)
         else:
-            logger.info(f"Job code {self.job_code} exists in SAP system.")  
             # Force all values to strings and clean .0 endings
             result = result[self.requested_fields].astype(str).replace(r'\.0$', '', regex=True)
         return result

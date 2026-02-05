@@ -3,10 +3,23 @@ migration_query="""
         -- Pre-filter to get all active employees
         -- Materialized hint for Oracle to cache this CTE
         SELECT /*+ MATERIALIZE */ DISTINCT PDM_UID
-        FROM STAGING.M_HR_PERSON_V2
+        FROM STAGING.M_HR_PERSON_V2 MHPV2 
         WHERE
-            (IS_STAFF_MEMBER = 'Y') --external IM requested by Nico
-            AND IS_CURRENT_ACTIVE = 'Y'
+                MHPV2.IS_CURRENT_ACTIVE = 'Y'
+            AND (
+                    -- Staff members
+                    MHPV2.IS_STAFF_MEMBER = 'Y'
+
+                    -- Explicitly allowed external users
+                    OR MHPV2.PDM_UID IN ('7035818', '7043121')
+
+                    -- Include IM and non-staff users (with exclusion)
+                    OR (
+                        MHPV2.IS_STAFF_MEMBER = 'N'
+                        AND MHPV2.IS_PEOPLEHUB_IM_MANUALLY_INCLUDED = 'Y'
+                        AND MHPV2.PDM_UID <> '28470'
+                    )
+                )
     ),
     -- Precompute email classification to avoid repeated LOWER() calls
     email_classification AS (
@@ -166,5 +179,5 @@ migration_query="""
 
     -- Final WHERE clause applies exclusions and location filters
     WHERE MHP.PDM_UID NOT IN ('7033439', '7033429', '7033440') -- Excluded users
-      AND MHP.COUNTRY_CODE IN ('CY')
+      AND MHP.COUNTRY_CODE IN ('GR')
         """

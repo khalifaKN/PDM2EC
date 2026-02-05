@@ -17,7 +17,17 @@ class SCM_IM_UpdatesRetriever(BaseUsersUpdatesRetriever):
     def __init__(self, pdm_data: pd.DataFrame, ec_data: pd.DataFrame, scm_users_ids: set, im_users_ids: set,
                  postgres_connector, table_names, chunk_size: int = 1000, sap_email_data=None, run_id=None, batch_context=None):
         all_users_ids = scm_users_ids.union(im_users_ids)
-        super().__init__(pdm_data, ec_data, all_users_ids, postgres_connector, table_names, chunk_size, sap_email_data, run_id, batch_context)
+        super().__init__(
+            pdm_data=pdm_data,
+            ec_data=ec_data,
+            user_ids=all_users_ids,
+            postgres_connector=postgres_connector,
+            table_names=table_names,
+            sap_email_data=sap_email_data,
+            chunk_size=chunk_size,
+            run_id=run_id,
+            batch_context=batch_context
+        )
         self.scm_users_ids = set(scm_users_ids)
         self.im_users_ids = set(im_users_ids)
 
