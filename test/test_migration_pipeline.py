@@ -757,7 +757,7 @@ if __name__ == "__main__":
         
         # Calculate total records for processing
         total_records = len(cached_pdm_data) if cached_pdm_data is not None else 0
-        run_id = history_loader.start_pipeline_run(total_records, start_time_,country='CYPRUS')
+        run_id = history_loader.start_pipeline_run(total_records, start_time_,country='GREECE')
         logger.info(f"Pipeline run started with ID: {run_id}")
         
         # Clean any leftover failures from previous incomplete runs with same run_id

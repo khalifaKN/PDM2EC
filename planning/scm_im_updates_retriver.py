@@ -107,6 +107,12 @@ class SCM_IM_UpdatesRetriever(BaseUsersUpdatesRetriever):
                     is_scm_user=userid in scm_users,
                     is_im_user=userid in im_users
                 )
+                yield from self._control_phone_updates(
+                    userid=userid,
+                    pdm_row=pdm_common.loc[userid],
+                    is_scm_user=userid in scm_users,
+                    is_im_user=userid in im_users
+                )
 
             Logger.info("Completed generating changes for SCM/IM users (vectorized).")
 

@@ -143,16 +143,29 @@ class PersonPayloadBuilder:
             )
             return None
 
-    def build_perphone_payload(self):
+    def build_perphone_payload(self,phone: str,phone_type: int,is_primary: bool = False,action: str = "INSERT" 
+    ):
+        """
+        Build PerPhone payload for a specific action.
+        Args:
+            phone: phone number
+            phone_type: 
+                    "BIZ_PHONE": "18258",   # Business phone
+                    "BIZ_MOBILE": "18257",  # Business mobile
+            is_primary: whether this phone should be primary
+            action: 'INSERT', 'UPDATE', 'DELETE'
+            Returns:
+                dict payload for perphone
+        """
         try:
             payload = get_perphone_payload()
-            if not self.phone:
+            if not phone:
                 return None
             parsed_country_code = None
             iso3_code = None
             national_number = None
             try:
-                parsed_phone = phonenumbers.parse(self.phone, None)
+                parsed_phone = phonenumbers.parse(phone, None)
                 parsed_country_code = f"+{parsed_phone.country_code}"
                 region_code = phonenumbers.region_code_for_country_code(
                     parsed_phone.country_code
@@ -160,25 +173,27 @@ class PersonPayloadBuilder:
                 iso3_code = get_iso3_numeric(region_code)
                 national_number = str(parsed_phone.national_number)
             except Exception as e:
-                Logger.info(
-                    f"No valid phone data for {self.person_id_external} - {self.phone}: {e}"
+                Logger.warning(
+                    f"No valid phone data for {self.person_id_external} - {phone}: {e}"
                 )
                 return None
             if parsed_country_code and iso3_code:
                 payload["personIdExternal"] = self.person_id_external
-                payload["phoneType"] = "18258"  # Business phone
+                payload["phoneType"] = phone_type
                 payload["customString1"] = iso3_code
                 payload["countryCode"] = parsed_country_code
+                if action.upper() == "DELETE":
+                    payload["operation"] = "DELETE"
                 payload["phoneNumber"] = national_number
-                payload["isPrimary"] = True
+                payload["isPrimary"] = is_primary
                 return payload
             else:
-                Logger.info(
-                    f"No valid phone data for {self.person_id_external} - {self.phone}"
+                Logger.warning(
+                    f"No valid phone data for {self.person_id_external} - {phone}"
                 )
                 return None
         except Exception as e:
             Logger.error(
-                f"Error building PerPhone payload for {self.person_id_external}: {e}"
+                f"Error building PerPhone payload for {self.person_id_external} - {phone}: {e}"
             )
             return None

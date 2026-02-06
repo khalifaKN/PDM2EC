@@ -163,8 +163,8 @@ class PositionValidator:
         try:
             # First, find the position code from employees or positions
             position_code = self.position_code_exists_in_employees()
-            if not position_code:
-                position_code = self.position_code_exists_in_positions()
+            # if not position_code:
+            #     position_code = self.position_code_exists_in_positions()
             
             # If no position code found at all, no update needed (will create new)
             if not position_code:

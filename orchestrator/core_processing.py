@@ -568,194 +568,225 @@ class CoreProcessor:
     def _handle_person(self, row: pd.Series, ctx: UserExecutionContext):
         """
         Build PerPerson, PerPersonal, PerEmail, and PerPhone payloads for the user.
-        Steps:
-        1. Validate required fields.
-        2. Check if personIdExternal already exists.
-        3. Build payloads using PersonPayloadBuilder.
-        4. Add payloads to context.
+        Refactored for clarity and maintainability.
         """
         try:
             user_id = ctx.user_id
-
-            email_resolver = EmailResolver()
-            resolved = email_resolver.resolve_user_email(
-                userid=user_id,
-                pdm_row=row,
-                hr_global_users=self.hr_global_users,
-                sap_email_data=self.sap_email_data,
-            )
-            safe_row = row.copy()
-            safe_row["email"] = resolved["business_email"]
-            safe_row["private_email"] = resolved["private_email"]
-            ctx.runtime["original_row"] = safe_row
-            row = safe_row
-            Logger.info(f"Emails resolved for user {user_id}")
-            person_validator = PersonValidator(
-                record=row,
-                required_fields=[
-                    "firstname",
-                    "lastname",
-                    "userid",
-                    "date_of_birth",
-                    "date_of_position",
-                    "email",
-                ],
-                person_df=self.sap_cache.get("perperson_df"),
-            )
-
-            if not person_validator.validate_required_fields():
-                missing = getattr(person_validator, "missing_fields", None)
-                details = f" Missing fields: {', '.join(missing)}" if missing else ""
-                ctx.fail(
-                    f"Missing required fields for person creation for user {user_id}.{details}"
-                )
+            row = self._resolve_and_update_emails(row, ctx, user_id)
+            person_validator = self._validate_person_fields(row, ctx, user_id)
+            if person_validator is None:
                 return
+            if self._skip_person_payload_if_no_changes(person_validator, ctx, user_id):
+                return
+            person_builder = self._build_person_builder(row, user_id)
+            if not self._handle_perperson_payload(person_builder, ctx, user_id):
+                return
+            if not self._handle_perpersonal_payload(person_builder, ctx, user_id):
+                return
+            if not self._handle_peremail_payloads(person_builder, row, ctx, user_id):
+                return
+            self._handle_perphone_payloads(person_builder, row, ctx, user_id)
+        except Exception as e:
+            error_msg = f"Error building person-related payloads for user {ctx.user_id}: {e}"
+            Logger.error(error_msg, exc_info=True)
+            ctx.fail(error_msg)
 
-            if person_validator.personid_exists():
-                ctx.warn(f"personIdExternal {user_id} already exists")
+    def _resolve_and_update_emails(self, row, ctx, user_id):
+        email_resolver = EmailResolver()
+        resolved = email_resolver.resolve_user_email(
+            userid=user_id,
+            pdm_row=row,
+            hr_global_users=self.hr_global_users,
+            sap_email_data=self.sap_email_data,
+        )
+        safe_row = row.copy()
+        safe_row["email"] = resolved["business_email"]
+        safe_row["private_email"] = resolved["private_email"]
+        ctx.runtime["original_row"] = safe_row
+        Logger.info(f"Emails resolved for user {user_id}")
+        return safe_row
 
-            fields_to_check = [
+    def _validate_person_fields(self, row, ctx, user_id):
+        person_validator = PersonValidator(
+            record=row,
+            required_fields=[
                 "firstname",
                 "lastname",
+                "userid",
                 "date_of_birth",
                 "date_of_position",
                 "email",
-                "private_email",
-                "gender",
-                "phone",
-            ]
-            # Check for changes to avoid unnecessary payload building
-            # Only skip if person already exists AND no changes detected
-            if (
-                person_validator.personid_exists()
-                and not person_validator.check_changes(fields_to_check)
-            ):
-                Logger.info(
-                    f"No changes detected for person {user_id}, skipping payload building"
-                )
-                # Mark person as SUCCESS since it already exists and is up-to-date
-                ctx.runtime["entity_status"]["PerPerson"] = "SUCCESS"
-                return
-
-            Logger.info(f"Building person payloads for user {user_id}")
-
-            employment_start_date = row.get("date_of_position")
-
-            person_builder = PersonPayloadBuilder(
-                first_name=row["firstname"],
-                last_name=row["lastname"],
-                person_id_external=user_id,
-                date_of_birth=row["date_of_birth"],
-                start_date=employment_start_date,
-                email=row["email"],
-                nickname=row.get("nickname", None),
-                middle_name=row.get("mi", None),
-                private_email=row.get("private_email", None),
-                gender=row.get("gender", None),
-                phone=row.get("phone", None),
-                postgres_cache=self.postgres_cache,
+            ],
+            person_df=self.sap_cache.get("perperson_df"),
+        )
+        if not person_validator.validate_required_fields():
+            missing = getattr(person_validator, "missing_fields", None)
+            details = f" Missing fields: {', '.join(missing)}" if missing else ""
+            ctx.fail(
+                f"Missing required fields for person creation for user {user_id}.{details}"
             )
-            # PerPerson payload
-            perperson_payload = person_builder.build_perperson_payload()
-            if not perperson_payload:
-                err = getattr(person_builder, "last_error", None)
-                extra = f" Builder error: {err}" if err else ""
-                ctx.fail(
-                    f"Failed to build perperson payload for user {user_id}.{extra}"
+            return None
+        if person_validator.personid_exists():
+            ctx.warn(f"personIdExternal {user_id} already exists")
+        return person_validator
+
+    def _skip_person_payload_if_no_changes(self, person_validator, ctx, user_id):
+        fields_to_check = [
+            "firstname",
+            "lastname",
+            "date_of_birth",
+            "date_of_position",
+            "email",
+            "private_email",
+            "gender",
+            "phone",
+        ]
+        if (
+            person_validator.personid_exists()
+            and not person_validator.check_changes(fields_to_check)
+        ):
+            Logger.info(
+                f"No changes detected for person {user_id}, skipping payload building"
+            )
+            ctx.runtime["entity_status"]["PerPerson"] = "SUCCESS"
+            return True
+        Logger.info(f"Building person payloads for user {user_id}")
+        return False
+
+    def _build_person_builder(self, row, user_id):
+        employment_start_date = row.get("date_of_position")
+        return PersonPayloadBuilder(
+            first_name=row["firstname"],
+            last_name=row["lastname"],
+            person_id_external=user_id,
+            date_of_birth=row["date_of_birth"],
+            start_date=employment_start_date,
+            email=row["email"],
+            nickname=row.get("nickname", None),
+            middle_name=row.get("mi", None),
+            private_email=row.get("private_email", None),
+            gender=row.get("gender", None),
+            phone=row.get("phone", None),
+            postgres_cache=self.postgres_cache,
+        )
+
+    def _handle_perperson_payload(self, person_builder, ctx, user_id):
+        perperson_payload = person_builder.build_perperson_payload()
+        if not perperson_payload:
+            err = getattr(person_builder, "last_error", None)
+            extra = f" Builder error: {err}" if err else ""
+            ctx.fail(
+                f"Failed to build perperson payload for user {user_id}.{extra}"
+            )
+            return False
+        ctx.payloads["perperson"] = perperson_payload
+        return True
+
+    def _handle_perpersonal_payload(self, person_builder, ctx, user_id):
+        perpersonal_payload = person_builder.build_perpersonal_payload()
+        if not perpersonal_payload:
+            err = getattr(person_builder, "last_error", None)
+            extra = f" Builder error: {err}" if err else ""
+            ctx.fail(
+                f"Failed to build perpersonal payload for user {user_id}.{extra}"
+            )
+            return False
+        ctx.payloads["perpersonal"] = perpersonal_payload
+        return True
+
+    def _handle_peremail_payloads(self, person_builder, row, ctx, user_id):
+        business_email = row.get("email")
+        private_email = row.get("private_email")
+        if (
+            business_email is None
+            or pd.isna(business_email)
+            or str(business_email).strip() == ""
+        ):
+            ctx.warn(
+                f"Email is missing for user {user_id}, skipping PerEmail payload"
+            )
+            return False
+        business_email_norm = str(business_email).strip().lower()
+        peremail_payloads = []
+        business_payload = person_builder.build_peremail_payload(
+            is_business_email=True
+        )
+        if not business_payload:
+            err = getattr(person_builder, "last_error", None)
+            extra = f" Builder error: {err}" if err else ""
+            ctx.fail(
+                f"Failed to build PerEmail (business) payload for user {user_id}.{extra}"
+            )
+            return False
+        peremail_payloads.append(business_payload)
+        if (
+            private_email is not None
+            and not pd.isna(private_email)
+            and str(private_email).strip() != ""
+        ):
+            private_email_norm = str(private_email).strip().lower()
+            if private_email_norm != business_email_norm:
+                private_payload = person_builder.build_peremail_payload(
+                    is_business_email=False
                 )
-                return
-            ctx.payloads["perperson"] = perperson_payload
+                if not private_payload:
+                    err = getattr(person_builder, "last_error", None)
+                    extra = f" Builder error: {err}" if err else ""
+                    ctx.warn(
+                        f"Failed to build PerEmail (private) payload for user {user_id}.{extra}"
+                    )
+                else:
+                    peremail_payloads.append(private_payload)
+        ctx.payloads["peremail"] = peremail_payloads
+        return True
 
-            # PerPersonal payload
-            perpersonal_payload = person_builder.build_perpersonal_payload()
-            if not perpersonal_payload:
-                err = getattr(person_builder, "last_error", None)
-                extra = f" Builder error: {err}" if err else ""
-                ctx.fail(
-                    f"Failed to build perpersonal payload for user {user_id}.{extra}"
-                )
-                return
-            ctx.payloads["perpersonal"] = perpersonal_payload
-
-            # PerEmail payload (Business Email)
-
-            business_email = row.get("email")
-            private_email = row.get("private_email")
-
-            # Business email is mandatory
-            if (
-                business_email is None
-                or pd.isna(business_email)
-                or str(business_email).strip() == ""
-            ):
-                ctx.warn(
-                    f"Email is missing for user {user_id}, skipping PerEmail payload"
-                )
-                return
-
-            business_email_norm = str(business_email).strip().lower()
-
-            # Always store peremail as a list (consistent)
-            peremail_payloads = []
-
-            # ---- Build business email payload
-            business_payload = person_builder.build_peremail_payload(
-                is_business_email=True
+    def _handle_perphone_payloads(self, person_builder, row, ctx, user_id):
+        business_phone = row.get("biz_phone")
+        perphone_payloads = []
+        if (
+            business_phone is not None
+            and not pd.isna(business_phone)
+            and str(business_phone).strip() != ""
+        ):
+            
+        
+            business_payload = person_builder.build_perphone_payload(
+                phone=business_phone,
+                phone_type=18258,  # Business phone type code
+                is_primary=True
             )
             if not business_payload:
                 err = getattr(person_builder, "last_error", None)
                 extra = f" Builder error: {err}" if err else ""
-                ctx.fail(
-                    f"Failed to build PerEmail (business) payload for user {user_id}.{extra}"
+                ctx.warn(
+                    f"Failed to build PerPhone (business) payload for user {user_id}.{extra}"
                 )
-                return
-
-            peremail_payloads.append(business_payload)
-
-            # ---- Private email payload (optional)
-            if (
-                private_email is None
-                or pd.isna(private_email)
-                or str(private_email).strip() == ""
-            ):
-                pass
-            else:
-                private_email_norm = str(private_email).strip().lower()
-
-                # Only create private email if different from business
-                if private_email_norm != business_email_norm:
-                    private_payload = person_builder.build_peremail_payload(
-                        is_business_email=False
-                    )
-
-                    if not private_payload:
-                        err = getattr(person_builder, "last_error", None)
-                        extra = f" Builder error: {err}" if err else ""
-                        ctx.warn(
-                            f"Failed to build PerEmail (private) payload for user {user_id}.{extra}"
-                        )
-                    else:
-                        peremail_payloads.append(private_payload)
-
-            # Save only if we have at least 1 payload
-            ctx.payloads["peremail"] = peremail_payloads
-            # PerPhone payload
-            if row.get("phone") is None or pd.isna(row.get("phone")):
-                Logger.info(
-                    f"Phone is missing for user {user_id}, skipping PerPhone payload"
+            perphone_payloads.append(business_payload)
+        else:
+            ctx.warn(
+                f"Business phone is missing for user {user_id}, skipping business PerPhone payload"
+            )    
+        private_phone = row.get("biz_mobile")
+        if (
+            private_phone is not None
+            and not pd.isna(private_phone)
+            and str(private_phone).strip() != ""
+        ):
+            private_payload = person_builder.build_perphone_payload(
+                phone=private_phone,
+                phone_type=18257,
+                is_primary=False
+            )
+            if not private_payload:
+                err = getattr(person_builder, "last_error", None)
+                extra = f" Builder error: {err}" if err else ""
+                ctx.warn(
+                    f"Failed to build PerPhone (private) payload for user {user_id}.{extra}"
                 )
             else:
-                perphone_payload = person_builder.build_perphone_payload()
-                if not perphone_payload:
-                    err = getattr(person_builder, "last_error", None)
-                    extra = f" Builder error: {err}" if err else ""
-                    ctx.fail(
-                        f"Failed to build perphone payload for user {user_id}.{extra}"
-                    )
-                    return
-                ctx.payloads["perphone"] = perphone_payload
-        except Exception as e:
-            ctx.fail(f"Error building person payloads for user {ctx.user_id}: {e}")
+                perphone_payloads.append(private_payload)
+        if perphone_payloads:
+            ctx.payloads["perphone"] = perphone_payloads
 
     def _handle_position_matrix_relationship(
         self,
@@ -1779,6 +1810,12 @@ class CoreProcessor:
                         "action": str,        # insert / delete / update_type / promote / demote
                         "type": int,          # 18242 = business, 18240 = private
                         "email": str | None   # actual email, if known
+                    },
+                "phone_actions": list of dicts:
+                    {
+                        "action": str,        # insert / delete / update_type / promote / demote
+                        "type": int,          # 18242 = business, 18240 = private
+                        "phone": str | None   # actual phone, if known
                     }
             }
         """
@@ -1791,7 +1828,7 @@ class CoreProcessor:
             ec_value = row.get("ec_value")
 
             if user_id not in dirty_entities:
-                dirty_entities[user_id] = {"entities": set(), "email_actions": []}
+                dirty_entities[user_id] = {"entities": set(), "email_actions": [], "phone_actions": []}
 
             if field.startswith("email::"):
                 # Parse structured email action
@@ -1817,6 +1854,33 @@ class CoreProcessor:
                             "action": action_name,  # insert / delete / update_type / promote / demote
                             "type": email_type,
                             "email": email_to_use if pd.notna(email_to_use) else None,
+                        }
+                    )
+                continue
+            if field.startswith("phone::"):
+                # Parse structured phone action
+                # e.g., phone::insert::18258, phone::promote::18258, phone::insert::18257
+                parts = field.split("::")
+                if len(parts) == 3:
+                    action_name = parts[1].lower()
+                    type_str = parts[2]
+
+                    # Type can be numeric (18258, 18257) or text (business, personal)
+                    if type_str.isdigit():
+                        phone_type = int(type_str)
+                    else:
+                        phone_type = 18258 if "business" in type_str.lower() else 18257
+
+                    dirty_entities[user_id]["entities"].add("PerPhone")
+
+                    # Use whichever value is filled (only one will be present at a time)
+                    phone_to_use = pdm_value if pd.notna(pdm_value) else ec_value
+
+                    dirty_entities[user_id]["phone_actions"].append(
+                        {
+                            "action": action_name,  # insert / delete / update_type / promote / demote
+                            "type": phone_type,
+                            "phone": phone_to_use if pd.notna(phone_to_use) else None,
                         }
                     )
                 continue
@@ -2236,6 +2300,172 @@ class CoreProcessor:
 
         except Exception as e:
             ctx.fail(f"Error handling email updates for {user_id}: {e}")
+
+    def _handle_phone_updates(
+        self,
+        ctx: "UserExecutionContext",
+        person_builder: "PersonPayloadBuilder",
+    ):
+        """
+        Handle phone updates for a user based on PhoneValidator decisions.
+        Transforms flat phone_actions list from _extract_dirty_entities into structured format.
+
+        Input format (from _extract_dirty_entities):
+            [{"action": "insert", "type": 18242, "phone": "1234567890"}, ...]
+
+        Processed format:
+            {
+                "insert": [(phone, type), ...],
+                "delete": [(phone, type), ...],
+                "update_type": [(phone, old_type, new_type), ...],
+                "primary": {
+                    "promote": (phone, type) or None,
+                    "demote": (phone, type) or None
+                }
+            }
+        """
+        try:
+            user_id = ctx.user_id
+            phone_actions_flat = ctx.runtime.get("phone_actions", [])
+            if not phone_actions_flat:
+                return
+
+            # Transform flat list into structured format
+            phone_actions = {
+                "insert": [],
+                "delete": [],
+                "update_type": [],
+                "primary": {"promote": None, "demote": None},
+            }
+
+            for item in phone_actions_flat:
+                action = item.get("action", "").lower()
+                phone = item.get("phone")
+                phone_type = item.get("type")
+
+                if action == "insert":
+                    phone_actions["insert"].append((phone, phone_type))
+                elif action == "delete":
+                    phone_actions["delete"].append((phone, phone_type))
+                elif action == "update_type":
+                    phone_actions["update_type"].append((phone, phone_type))
+                elif action == "promote":
+                    phone_actions["primary"]["promote"] = (phone, phone_type)
+                elif action == "demote":
+                    phone_actions["primary"]["demote"] = (phone, phone_type)
+                else:
+                    ctx.warn(f"Unknown phone action '{action}' for user {user_id}")
+
+            if not any(
+                [
+                    phone_actions["insert"],
+                    phone_actions["delete"],
+                    phone_actions["update_type"],
+                    phone_actions["primary"]["promote"],
+                    phone_actions["primary"]["demote"],
+                ]
+            ):
+                ctx.warn(f"No valid phone actions after transformation for {user_id}")
+                return
+
+            payloads = []
+
+            # Get promote/demote info for deduplication
+            primary = phone_actions.get("primary", {})
+            promote = primary.get("promote")  # (phone, type)
+            demote = primary.get("demote")  # (phone, type)
+
+            # DEMOTE - Must happen first to remove primary flag before promoting another
+            if demote:
+                phone, phone_type = demote
+                payload = person_builder.build_per_phone_payload(
+                    phone=phone,
+                    phone_type=phone_type,
+                    is_primary=False,
+                    action="UPDATE",
+                )
+                if payload:
+                    payload["_phone_action"] = "DEMOTE"
+                    payloads.append(payload)
+
+            # DELETE existing phones
+            for phone, phone_type in phone_actions.get("delete", []):
+                payload = person_builder.build_per_phone_payload(
+                    phone=phone, phone_type=phone_type, action="DELETE"
+                )
+                if payload:
+                    payload["_phone_action"] = "DELETE"
+                    payloads.append(payload)
+
+            # UPDATE phone type
+            for phone, new_type in phone_actions.get("update_type", []):
+                payload = person_builder.build_per_phone_payload(
+                    phone=phone, phone_type=new_type, is_primary=False, action="UPDATE"
+                )
+                if payload:
+                    payload["_phone_action"] = "UPDATE_TYPE"
+                    payloads.append(payload)
+
+            # PROMOTE - Set new primary email (if email doesn't exist, this also inserts it)
+            if promote:
+                phone, phone_type = promote
+                payload = person_builder.build_per_phone_payload(
+                    phone=phone, phone_type=phone_type, is_primary=True, action="UPDATE"
+                )
+                if payload:
+                    payload["_phone_action"] = "PROMOTE"
+                    payloads.append(payload)
+
+            # INSERT new phones (skip if phone is being promoted - promote handles both insert + primary)
+            for phone, phone_type in phone_actions.get("insert", []):
+                # Skip if this phone is being promoted (promote will handle the insert)
+                if promote and phone == promote[0] and phone_type == promote[1]:
+                    continue
+
+                is_primary = (
+                    phone_type == 18242
+                )  # business phones are primary by default
+                payload = person_builder.build_per_phone_payload(
+                    phone=phone,
+                    phone_type=phone_type,
+                    is_primary=is_primary,
+                    action="INSERT",
+                )
+                if payload:
+                    payload["_phone_action"] = "INSERT"
+                    payloads.append(payload)
+
+            if payloads:
+                deduped = []
+                seen = set()
+                for p in payloads:
+                    try:
+                        key = (
+                            p.get("emailAddress"),
+                            str(p.get("emailType"))
+                            if p.get("emailType") is not None
+                            else None,
+                            p.get("operation") if "operation" in p else None,
+                            bool(p.get("isPrimary")) if "isPrimary" in p else None,
+                        )
+                    except Exception:
+                        key = None
+
+                    if key and key in seen:
+                        continue
+
+                    if key:
+                        seen.add(key)
+                    deduped.append(p)
+
+                ctx.payloads["peremail"] = deduped if len(deduped) > 1 else deduped[0]
+            else:
+                ctx.warn(
+                    f"No payloads generated for user {user_id} despite email actions"
+                )
+
+        except Exception as e:
+            ctx.fail(f"Error handling email updates for {user_id}: {e}") 
 
     def _build_employment_updates(
         self,

@@ -1,3 +1,4 @@
+import email
 from loader.bulk_insert_employee_field_changes import BulkInsertEmployeeFieldChanges
 from cache.employees_cache import EmployeesDataCache
 from cache.oracle_cache import OracleDataCache
@@ -9,6 +10,8 @@ from validator.person.email_validator import EmailValidator
 from utils.logger import get_logger
 import uuid
 import pandas as pd
+
+from validator.person.phone_validator import PhoneValidator
 Logger = get_logger("base_users_updates_retriever")
 
 class BaseUsersUpdatesRetriever:
@@ -254,3 +257,84 @@ class BaseUsersUpdatesRetriever:
             )
     
     
+    def _control_phone_updates(self, userid: str, pdm_row: pd.Series, is_scm_user: bool, is_im_user: bool):
+        """
+        Controls phone updates by validating and deciding necessary actions using PhoneValidator.
+        Yields FieldChange objects for each action.
+        """
+        validator = PhoneValidator(
+            record=pdm_row,
+            email_data=self.sap_email_data,
+            userid=userid
+        )
+
+        decisions = validator.decide()  # structured dict with insert, delete, update_type, primary
+
+        # -------------------------
+        # Insert phones
+        # -------------------------
+        for item in decisions.get("insert", []):
+            yield FieldChange(
+                userid=userid,
+                field_name=f"phone::insert::{item['type']}",
+                ec_value=None,
+                pdm_value=item['phone'],
+                is_scm_user=is_scm_user,
+                is_im_user=is_im_user
+            )
+
+        # -------------------------
+        # Delete phones
+        # -------------------------
+        for item in decisions.get("delete", []):
+            yield FieldChange(
+                userid=userid,
+                field_name=f"phone::delete::{item['type']}",
+                ec_value=item['phone'],
+                pdm_value=None,
+                is_scm_user=is_scm_user,
+                is_im_user=is_im_user
+            )
+
+        # -------------------------
+        # Update type
+        # -------------------------
+        for item in decisions.get("update_type", []):
+            yield FieldChange(
+                userid=userid,
+                field_name=f"phone::update_type::{item['phone']}",
+                ec_value=item['old_type'],
+                pdm_value=item['new_type'],
+                is_scm_user=is_scm_user,
+                is_im_user=is_im_user
+            )
+
+        # -------------------------
+        # Primary promotion/demotion
+        # -------------------------
+        primary = decisions.get("primary", {})
+        if primary.get("promote"):
+            private_phone = (pdm_row.get("biz_mobile") or "").lower()
+            phone = primary["promote"]
+            phone_type = 18257 if phone == private_phone else 18258
+            yield FieldChange(
+                userid=userid,
+                field_name=f"phone::promote::{phone_type}",
+                ec_value=None,
+                pdm_value=phone,
+                is_scm_user=is_scm_user,
+                is_im_user=is_im_user
+            )
+        
+        if primary.get("demote"):
+            phone = primary["demote"]
+            private_phone = (pdm_row.get("biz_mobile") or "").lower()
+            phone_type = 18257 if phone == private_phone else 18258
+            yield FieldChange(
+                userid=userid,
+                field_name=f"phone::demote::{phone_type}",
+                ec_value=phone,
+                pdm_value=None,
+                is_scm_user=is_scm_user,
+                is_im_user=is_im_user
+            )

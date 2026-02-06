@@ -45,6 +45,8 @@ class EmailResolver:
         user_id = userid.strip().lower()
         pdm_email = pdm_row.get("email")
         private_email = pdm_row.get("private_email")
+        # Convert from list of int to list of str
+        self.users_to_be_excluded = set(str(uid).strip() for uid in self.users_to_be_excluded)
 
         is_allowed_real_email = (
             user_id in hr_global_users

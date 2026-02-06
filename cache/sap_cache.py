@@ -113,3 +113,13 @@ class SAPDataCache:
             cls._data.clear()
             cls._initialized = False
             Logger.info("Reset SAPDataCache singleton")
+    # Reset Parquet files (use with caution - this will delete all cached data on disk)
+    def clear_parquet_cache(self):
+        with SAPDataCache._lock:
+            try:
+                for filename in os.listdir(self._cache_dir):
+                    if filename.endswith(".parquet"):
+                        os.remove(os.path.join(self._cache_dir, filename))
+                Logger.info("Cleared parquet cache files")
+            except Exception as e:
+                Logger.error(f"Error clearing parquet cache: {e}")

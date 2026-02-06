@@ -14,7 +14,7 @@ import logging
 import pandas as pd
 
 # Import pipeline functions
-from test.test_migration_pipeline import (
+from test.test_offline_migration_pipeline import (
     extract_and_cache_database_data,
     extract_and_cache_sap_data,
     load_cached_data,

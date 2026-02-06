@@ -1,6 +1,8 @@
 # Virtual env & IDE
 .venv/
 .vscode/
+# IDE files
+./idea/
 
 # Logs & runtime
 logs/

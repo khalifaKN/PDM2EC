@@ -671,19 +671,19 @@ class MigrationProcessor(CoreProcessor):
                 return
 
             # Check if employee already has position with PositionValidator
-            position_validator = PositionValidator(
-                record=row,
-                pos_data=self.sap_cache.get("positions_df"),
-                emp_data=self.sap_cache.get("employees_df"),
-                user_id=user_id,
-                ec_user_id=ctx.ec_user_id,
-                results=results,
-                required_fields=PositionPayloadBuilder.REQUIRED_FIELDS,
-            )
-            position_code = position_validator.position_code_exists_in_positions()
-            if position_code:
-                has_position = True
-                ctx.position_code = position_code
+            # position_validator = PositionValidator(
+            #     record=row,
+            #     pos_data=self.sap_cache.get("positions_df"),
+            #     emp_data=self.sap_cache.get("employees_df"),
+            #     user_id=user_id,
+            #     ec_user_id=ctx.ec_user_id,
+            #     results=results,
+            #     required_fields=PositionPayloadBuilder.REQUIRED_FIELDS,
+            # )
+            # position_code = position_validator.position_code_exists_in_positions()
+            # if position_code:
+            #     has_position = True
+            #     ctx.position_code = position_code
             # Build position payload with is_update=True
             position_builder = PositionPayloadBuilder(
                 record=row.to_dict(),

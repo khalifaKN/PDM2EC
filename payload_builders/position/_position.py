@@ -216,7 +216,7 @@ class PositionPayloadBuilder:
             )
             return None
     
-    def _get_position_uri(self, position_code, manager_userid: str=None):
+    def _get_position_uri(self, position_code, manager_userid: str):
         """Retrieve position URI using cached positions data."""
         positions_df = self.positions_df
         Logger.info(f"Retrieving position URI for position code: {position_code} for manager USERID: {manager_userid}")
@@ -241,7 +241,20 @@ class PositionPayloadBuilder:
                         return match[col].values[0]
                 Logger.warning(f"No position URI found for code {position_code} - metadata column missing or unexpected format")
             else:
-                Logger.warning(f"No matching position found for code {position_code} when retrieving URI")
+                # Build URI using position code in Manager USERID context
+                if manager_userid:
+                    manager_userid_clean = str(manager_userid).strip().lower()
+                    # Search for effective in results context to get effectiveStartDate for URI construction
+                    effective_start = "/Date(-2208988800000)/"  # Default effective start
+                    #retrieve manager context from results to get effective start date                    manager_ctx = self.results.get(manager_userid_clean)
+                    manager_ctx = self.results.get(manager_userid_clean)
+                    if manager_ctx and manager_ctx.position_code:
+                        effective_start= manager_ctx.empjob_start_date if hasattr(manager_ctx, "empjob_start_date") else effective_start
+                    built_uri = f"https://api55preview.sapsf.eu/odata/v2/Position(code='{position_code}',effectiveStartDate=datetime'{effective_start}')"
+                    Logger.info(f"Position code {position_code} not found in cache, but manager USERID {manager_userid_clean} exists. Built URI: {built_uri}")
+                    return built_uri
+                    
+                
         return None
 
     def get_position_data(self, position_code):
@@ -318,8 +331,8 @@ class PositionPayloadBuilder:
             elif self.is_update:
                 if not position_code_:
                     position_code = self._get_position_code_from_employees(self.record["userid"], dummy_position=dummy_position)
-                    if not position_code:
-                        position_code = self._get_position_code_from_positions(self.record)
+                    # if not position_code:
+                    #     position_code = self._get_position_code_from_positions(self.record)
                 else:
                     position_code = position_code_
                 

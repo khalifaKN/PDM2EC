@@ -67,6 +67,9 @@ class SAPInfoCacheHandler:
         
         #Clear cache before fetching new data
         self.sap_cache.reset_singleton()
+
+        #Remove Parquet files to reset cache state
+        self.sap_cache.clear_parquet_cache()
         
         if position_flag:
             self._fetch_cache_sap_data('positions', api_client)
